@@ -1,8 +1,15 @@
 node_modules
 .next
+# Secrets — never commit any env files or key material
 .env
-.env.local
-.env.*.local
+.env.*
+!.env.example
+*.pem
+*.key
+*.p8
+*.keystore
+secrets.*
+**/serviceAccount*.json
 *.log
 dist
 build
