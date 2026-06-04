@@ -6,7 +6,7 @@ import {
   Activity, BarChart3, Briefcase, ChevronDown, Image as ImageIcon, Layers,
   LineChart, Lock, ShieldCheck, Sparkles, Sprout, Zap,
 } from "lucide-react";
-import { AddressInput } from "@/components/AddressInput";
+import { AddressInput } from "@/components/wallet/AddressInput";
 
 const ScrollMorphHero = dynamic(
   () => import("@/components/ui/scroll-morph-hero").then((m) => m.default),

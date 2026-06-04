@@ -7,7 +7,7 @@ import {
 } from "lucide-react";
 import { cn, formatUSD, formatPrice, formatBalance, formatPct } from "@/lib/utils";
 import { calcTargetPrice } from "@/lib/aggregate/portfolio";
-import { TokenLogo } from "@/components/TokenLogo";
+import { TokenLogo } from "@/components/portfolio/TokenLogo";
 import { Card } from "@/components/ui/Card";
 import type { Portfolio, AggregatedHolding, SupportedCurrency } from "@/types";
 import { MIN_VISIBLE_USD } from "@/types";

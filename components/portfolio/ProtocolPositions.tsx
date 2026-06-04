@@ -6,9 +6,9 @@ import {
   Coins, Gift, Lock, ArrowDownLeft, ArrowUpRight,
 } from "lucide-react";
 import { cn, formatUSD, formatBalance, formatPrice } from "@/lib/utils";
-import { TokenLogo } from "@/components/TokenLogo";
+import { TokenLogo } from "@/components/portfolio/TokenLogo";
 import { Badge } from "@/components/ui/Badge";
-import { PositionExplainButton, PositionExplainDrawer } from "@/components/PositionExplainDrawer";
+import { PositionExplainButton, PositionExplainDrawer } from "@/components/portfolio/PositionExplainDrawer";
 import { buildItemExplanation } from "@/lib/positionExplainer";
 import type { ProtocolPosition, NormalizedPosition, PositionExplanation, ProtocolCategory } from "@/types";
 

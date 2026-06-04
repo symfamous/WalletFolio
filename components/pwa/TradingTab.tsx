@@ -1,8 +1,8 @@
 "use client";
 
 import { usePWAData } from "@/components/pwa/PWAContext";
-import { PerpPositions } from "@/components/PerpPositions";
-import { DashboardSkeleton } from "@/components/Skeleton";
+import { PerpPositions } from "@/components/portfolio/PerpPositions";
+import { DashboardSkeleton } from "@/components/common/Skeleton";
 import { Activity } from "lucide-react";
 import { TabHero } from "@/components/pwa/TabHero";
 

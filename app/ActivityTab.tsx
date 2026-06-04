@@ -1,7 +1,7 @@
 "use client";
 
 import { usePWAData }     from "@/components/pwa/PWAContext";
-import { WalletHistory }  from "@/components/WalletHistory";
+import { WalletHistory }  from "@/components/wallet/WalletHistory";
 
 export function ActivityTab() {
   const { address } = usePWAData();

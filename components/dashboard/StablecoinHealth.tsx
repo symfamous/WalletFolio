@@ -3,7 +3,7 @@
 import { useMemo } from "react";
 import { AlertTriangle, ShieldCheck } from "lucide-react";
 import { cn, formatUSD } from "@/lib/utils";
-import { TokenLogo } from "@/components/TokenLogo";
+import { TokenLogo } from "@/components/portfolio/TokenLogo";
 import type { Portfolio } from "@/types";
 
 const DEPEG_WARN = 0.5; // % off $1 to warn

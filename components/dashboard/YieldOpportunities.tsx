@@ -4,7 +4,7 @@ import { useMemo } from "react";
 import { ArrowUpRight, Sprout } from "lucide-react";
 import { useYields, type YieldPool } from "@/hooks/useYields";
 import { formatUSD } from "@/lib/utils";
-import { TokenLogo } from "@/components/TokenLogo";
+import { TokenLogo } from "@/components/portfolio/TokenLogo";
 import type { Portfolio } from "@/types";
 
 interface Row {

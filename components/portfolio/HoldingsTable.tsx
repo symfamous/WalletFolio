@@ -7,9 +7,9 @@ import {
   Layers, Building2, Wallet2,
 } from "lucide-react";
 import { cn, formatUSD, formatBalance, formatPrice, formatPct } from "@/lib/utils";
-import { TokenLogo } from "@/components/TokenLogo";
+import { TokenLogo } from "@/components/portfolio/TokenLogo";
 import { Badge } from "@/components/ui/Badge";
-import { PositionExplainButton, PositionExplainDrawer } from "@/components/PositionExplainDrawer";
+import { PositionExplainButton, PositionExplainDrawer } from "@/components/portfolio/PositionExplainDrawer";
 import { useHistory } from "@/hooks/useHistory";
 import { filterDust, filterPositionsDust } from "@/lib/aggregate/portfolio";
 import { buildHoldingAcquisitionInsights, type HoldingAcquisitionInsight } from "@/lib/holdingAcquisition";

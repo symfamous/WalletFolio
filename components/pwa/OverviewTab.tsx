@@ -16,9 +16,9 @@ import {
   Wallet,
 } from "lucide-react";
 import { usePWAData } from "@/components/pwa/PWAContext";
-import { PortfolioTimeline } from "@/components/PortfolioTimeline";
-import { CollapsibleSection } from "@/components/CollapsibleSection";
-import { DashboardSkeleton } from "@/components/Skeleton";
+import { PortfolioTimeline } from "@/components/portfolio/PortfolioTimeline";
+import { CollapsibleSection } from "@/components/common/CollapsibleSection";
+import { DashboardSkeleton } from "@/components/common/Skeleton";
 import { useCountUp } from "@/hooks/useCountUp";
 import { TabHero } from "@/components/pwa/TabHero";
 import { Badge } from "@/components/ui/Badge";

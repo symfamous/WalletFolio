@@ -7,7 +7,7 @@ import {
   type LucideIcon,
 } from "lucide-react";
 import { cn, formatUSD, formatPct } from "@/lib/utils";
-import { TokenLogo } from "@/components/TokenLogo";
+import { TokenLogo } from "@/components/portfolio/TokenLogo";
 import { Card } from "@/components/ui/Card";
 import {
   PieChart, Pie, Cell, ResponsiveContainer, Tooltip,
@@ -16,7 +16,7 @@ import type {
   PortfolioIntelligence as PI, Portfolio, SupportedCurrency, UnifiedRiskFactor,
 } from "@/types";
 import { getRiskStatePresentation } from "@/lib/riskMonitor";
-import { ChangeAttributionPanel } from "@/components/ChangeAttributionPanel";
+import { ChangeAttributionPanel } from "@/components/intelligence/ChangeAttributionPanel";
 import { useHistory } from "@/hooks/useHistory";
 import { buildPortfolioPnlLedger } from "@/lib/pnlLedger";
 import type { ChangeAttribution } from "@/lib/snapshots";

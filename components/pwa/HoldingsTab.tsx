@@ -2,11 +2,11 @@
 
 import { useState, useMemo } from "react";
 import { usePWAData } from "@/components/pwa/PWAContext";
-import { ChainBreakdown } from "@/components/ChainBreakdown";
-import { DashboardSkeleton } from "@/components/Skeleton";
-import { TokenLogo } from "@/components/TokenLogo";
+import { ChainBreakdown } from "@/components/portfolio/ChainBreakdown";
+import { DashboardSkeleton } from "@/components/common/Skeleton";
+import { TokenLogo } from "@/components/portfolio/TokenLogo";
 import { useHistory } from "@/hooks/useHistory";
-import { PositionExplainButton, PositionExplainDrawer } from "@/components/PositionExplainDrawer";
+import { PositionExplainButton, PositionExplainDrawer } from "@/components/portfolio/PositionExplainDrawer";
 import { TabHero } from "@/components/pwa/TabHero";
 import { filterDust } from "@/lib/aggregate/portfolio";
 import { buildHoldingAcquisitionInsights, type HoldingAcquisitionInsight } from "@/lib/holdingAcquisition";

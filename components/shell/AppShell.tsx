@@ -3,11 +3,11 @@
 import dynamic from "next/dynamic";
 import { useState, useCallback, useEffect, useRef } from "react";
 import { cn, normalizeTrackedAddress } from "@/lib/utils";
-import { Footer } from "@/components/Footer";
-import { WalletBar } from "@/components/WalletBar";
+import { Footer } from "@/components/shell/Footer";
+import { WalletBar } from "@/components/wallet/WalletBar";
 import { Button } from "@/components/ui/Button";
-import { CommandPalette } from "@/components/CommandPalette";
-import { ShareCardModal } from "@/components/ShareCardModal";
+import { CommandPalette } from "@/components/shell/CommandPalette";
+import { ShareCardModal } from "@/components/shell/ShareCardModal";
 import { SidebarNav } from "@/components/layout/SidebarNav";
 import { useMultiWallet } from "@/hooks/useMultiWallet";
 import { useMultiPortfolio } from "@/hooks/useMultiPortfolio";
@@ -21,7 +21,7 @@ const LS_AUTO_REFRESH = "pseryte_auto_refresh";
 const LS_ACTIVE_ADDR = "pseryte_last_address";
 
 const Dashboard = dynamic(
-  () => import("@/components/Dashboard").then((mod) => mod.Dashboard),
+  () => import("@/components/shell/Dashboard").then((mod) => mod.Dashboard),
   {
     loading: () => <div className="min-h-[24rem] rounded-xl bg-surface animate-pulse" />,
   },

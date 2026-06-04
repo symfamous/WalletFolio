@@ -1,9 +1,9 @@
 "use client";
 
-import { AddressInput } from "@/components/AddressInput";
+import { AddressInput } from "@/components/wallet/AddressInput";
 import { usePWAData } from "@/components/pwa/PWAContext";
 import { TabHero } from "@/components/pwa/TabHero";
-import { WalletManager } from "@/components/WalletManager";
+import { WalletManager } from "@/components/wallet/WalletManager";
 import { Card } from "@/components/ui/Card";
 import { useWallets } from "@/hooks/useWallets";
 import { cn, formatUSD } from "@/lib/utils";

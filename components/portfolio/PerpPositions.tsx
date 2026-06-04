@@ -8,9 +8,9 @@ import {
 } from "lucide-react";
 import { cn, formatUSD, formatPct } from "@/lib/utils";
 import { Card } from "@/components/ui/Card";
-import { PositionExplainButton, PositionExplainDrawer } from "@/components/PositionExplainDrawer";
+import { PositionExplainButton, PositionExplainDrawer } from "@/components/portfolio/PositionExplainDrawer";
 import { buildItemExplanation } from "@/lib/positionExplainer";
-import type { NormalizedPerpPosition, NormalizedPerpPlatform } from "../lib/providers/perps/types";
+import type { NormalizedPerpPosition, NormalizedPerpPlatform } from "@/lib/providers/perps/types";
 import type { PerpsApiResponse, PositionExplanation } from "@/types";
 
 interface Props {

@@ -2,7 +2,7 @@
 
 import { useState } from "react";
 import { usePWAData } from "@/components/pwa/PWAContext";
-import { AddressInput } from "@/components/AddressInput";
+import { AddressInput } from "@/components/wallet/AddressInput";
 import { useWallets } from "@/hooks/useWallets";
 import { cn, formatUSD } from "@/lib/utils";
 import { Plus, Trash2, ChevronRight, Check, Wallet, RefreshCw } from "lucide-react";

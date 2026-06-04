@@ -4,7 +4,7 @@ import dynamic from "next/dynamic";
 import { useState, useEffect } from "react";
 
 const Landing = dynamic(
-  () => import("@/components/Landing").then((mod) => mod.Landing),
+  () => import("@/components/shell/Landing").then((mod) => mod.Landing),
   {
     ssr: false,
     loading: () => <div className="min-h-[100dvh] bg-bg" />,
@@ -12,7 +12,7 @@ const Landing = dynamic(
 );
 
 const AppShell = dynamic(
-  () => import("@/components/AppShell").then((mod) => mod.AppShell),
+  () => import("@/components/shell/AppShell").then((mod) => mod.AppShell),
   {
     ssr: false,
     loading: () => <div className="min-h-[100dvh] bg-bg" />,

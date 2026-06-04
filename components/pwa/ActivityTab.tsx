@@ -1,7 +1,7 @@
 "use client";
 
 import { usePWAData }    from "@/components/pwa/PWAContext";
-import { WalletHistory } from "@/components/WalletHistory";
+import { WalletHistory } from "@/components/wallet/WalletHistory";
 import { TabHero }       from "@/components/pwa/TabHero";
 import { getActivityFeedModeForDashboard } from "@/lib/dashboardViewMode";
 

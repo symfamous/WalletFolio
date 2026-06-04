@@ -2,8 +2,8 @@
 
 import { useEffect, useMemo, useState } from "react";
 import { RefreshCw } from "lucide-react";
-import { DashboardSkeleton } from "@/components/Skeleton";
-import { StressViewDrawer } from "@/components/StressViewDrawer";
+import { DashboardSkeleton } from "@/components/common/Skeleton";
+import { StressViewDrawer } from "@/components/intelligence/StressViewDrawer";
 import { formatUSD } from "@/lib/utils";
 import { buildUnifiedRiskSummary } from "@/lib/riskMonitor";
 import { buildPortfolioStressSummary } from "@/lib/stressSummary";

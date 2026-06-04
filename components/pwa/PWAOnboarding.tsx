@@ -1,6 +1,6 @@
 "use client";
 
-import { AddressInput } from "@/components/AddressInput";
+import { AddressInput } from "@/components/wallet/AddressInput";
 
 interface PWAOnboardingProps {
   onSubmit: (address: string) => void;

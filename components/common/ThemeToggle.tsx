@@ -1,6 +1,6 @@
 "use client";
 
-import { useTheme } from "@/components/ThemeProvider";
+import { useTheme } from "@/components/common/ThemeProvider";
 import { Sun, Moon } from "lucide-react";
 import { motion } from "framer-motion";
 

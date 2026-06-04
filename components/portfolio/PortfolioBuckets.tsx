@@ -15,7 +15,7 @@ import { Card } from "@/components/ui/Card";
 import { Badge } from "@/components/ui/Badge";
 import { buildPortfolioBuckets } from "@/lib/portfolioBuckets";
 import { buildItemExplanation } from "@/lib/positionExplainer";
-import { PositionExplainDrawer } from "@/components/PositionExplainDrawer";
+import { PositionExplainDrawer } from "@/components/portfolio/PositionExplainDrawer";
 import type {
   Portfolio,
   PortfolioBucketId,

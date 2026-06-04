@@ -1,8 +1,8 @@
 "use client";
 
-import { DebtToPaidTracker } from "@/components/DebtToPaidTracker";
-import { FxBar } from "@/components/FxBar";
-import { TargetPriceCalculator } from "@/components/TargetPriceCalculator";
+import { DebtToPaidTracker } from "@/components/intelligence/DebtToPaidTracker";
+import { FxBar } from "@/components/common/FxBar";
+import { TargetPriceCalculator } from "@/components/intelligence/TargetPriceCalculator";
 import { usePWAData } from "@/components/pwa/PWAContext";
 import { TabHero } from "@/components/pwa/TabHero";
 import { Card } from "@/components/ui/Card";

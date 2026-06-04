@@ -2,10 +2,10 @@
 
 import { useState, useEffect } from "react";
 import { usePWAData } from "@/components/pwa/PWAContext";
-import { ProtocolPositions } from "@/components/ProtocolPositions";
-import { HiddenFundsScanner } from "@/components/HiddenFundsScanner";
-import { CollapsibleSection } from "@/components/CollapsibleSection";
-import { DashboardSkeleton } from "@/components/Skeleton";
+import { ProtocolPositions } from "@/components/portfolio/ProtocolPositions";
+import { HiddenFundsScanner } from "@/components/intelligence/HiddenFundsScanner";
+import { CollapsibleSection } from "@/components/common/CollapsibleSection";
+import { DashboardSkeleton } from "@/components/common/Skeleton";
 import { Eye, EyeOff, Building2 } from "lucide-react";
 import { formatUSD } from "@/lib/utils";
 import { buildProtocolPositions } from "@/lib/normalize/protocols";

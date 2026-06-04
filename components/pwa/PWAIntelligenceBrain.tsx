@@ -2,7 +2,7 @@
 
 import { useState } from "react";
 import { usePWAData } from "@/components/pwa/PWAContext";
-import { PortfolioIntelligence } from "@/components/PortfolioIntelligence";
+import { PortfolioIntelligence } from "@/components/intelligence/PortfolioIntelligence";
 import { PWASheet } from "@/components/pwa/PWASheet";
 
 export function PWAIntelligenceBrain() {

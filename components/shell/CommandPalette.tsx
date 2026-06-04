@@ -5,7 +5,7 @@ import {
   Activity, BookOpen, Briefcase, Compass, History, Layers, LineChart,
   Moon, Search, Settings2, Share2, Sparkles, Sun, Target, Wallet, Zap,
 } from "lucide-react";
-import { useTheme } from "@/components/ThemeProvider";
+import { useTheme } from "@/components/common/ThemeProvider";
 import { cn, shortenAddress } from "@/lib/utils";
 
 interface Cmd {
