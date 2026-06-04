@@ -64,7 +64,8 @@
       "Bash(pkill -f \"git add\")",
       "Bash(rm -f /home/pseryte/.git/index.lock)",
       "Bash(git init *)",
-      "Bash(grep -E \"node_modules/|\\\\.next/|\\\\.env|Zone.Identifier|\\\\.bak$\")"
+      "Bash(grep -E \"node_modules/|\\\\.next/|\\\\.env|Zone.Identifier|\\\\.bak$\")",
+      "Bash(git commit -q -m ' *)"
     ],
     "additionalDirectories": [
       "/home/pseryte/pseryteW.T/WalletFolio/public/mood"
