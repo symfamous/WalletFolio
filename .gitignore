@@ -10,3 +10,10 @@ build
 # Windows download artifacts & backups
 *Zone.Identifier
 *.bak
+*:mshield
+# Local tooling / generated (not for the public repo)
+.claude/
+.codex
+CLAUDE.md
+graphify-out/
+tsconfig.tsbuildinfo
