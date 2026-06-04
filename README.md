@@ -6,13 +6,15 @@ Paste any wallet address (EVM or Solana) and see its holdings, DeFi positions, p
 NFTs, P&L, yield opportunities, and risk across every chain — in one premium dashboard.
 No wallet connection. No signatures. No keys.
 
+**🔗 Live demo: https://folio-azure-pi.vercel.app**
+
 ---
 
 ## ✨ Try it (demo wallets)
 
 There are **no accounts** — WalletFolio only reads public on-chain data, so anyone can
-try it instantly. Run it locally (below), then on the landing page paste an address or
-click a demo:
+try it instantly. Open the **[live demo](https://folio-azure-pi.vercel.app)** (or run it
+locally, below), then on the landing page paste an address or click a demo:
 
 | Demo | Address |
 |------|---------|
