@@ -3,6 +3,7 @@
 import { DebtToPaidTracker } from "@/components/intelligence/DebtToPaidTracker";
 import { FxBar } from "@/components/common/FxBar";
 import { TargetPriceCalculator } from "@/components/intelligence/TargetPriceCalculator";
+import { ApprovalsScanner } from "@/components/intelligence/ApprovalsScanner";
 import { usePWAData } from "@/components/pwa/PWAContext";
 import { TabHero } from "@/components/pwa/TabHero";
 import { Card } from "@/components/ui/Card";
@@ -64,6 +65,8 @@ export function ToolsTab() {
           </p>
         </Card>
       ) : null}
+
+      <ApprovalsScanner address={address} />
     </div>
   );
 }

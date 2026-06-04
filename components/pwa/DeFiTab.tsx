@@ -3,6 +3,7 @@
 import { useState, useEffect } from "react";
 import { usePWAData } from "@/components/pwa/PWAContext";
 import { ProtocolPositions } from "@/components/portfolio/ProtocolPositions";
+import { YieldOpportunities } from "@/components/dashboard/YieldOpportunities";
 import { HiddenFundsScanner } from "@/components/intelligence/HiddenFundsScanner";
 import { CollapsibleSection } from "@/components/common/CollapsibleSection";
 import { DashboardSkeleton } from "@/components/common/Skeleton";
@@ -107,6 +108,8 @@ export function DeFiTab() {
           <HiddenFundsScanner portfolio={portfolio} intelligence={intelligence} />
         </CollapsibleSection>
       )}
+
+      <YieldOpportunities portfolio={portfolio} address={address} />
     </div>
   );
 }

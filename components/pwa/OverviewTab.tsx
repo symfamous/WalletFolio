@@ -16,6 +16,9 @@ import {
   Wallet,
 } from "lucide-react";
 import { usePWAData } from "@/components/pwa/PWAContext";
+import { MarketContextBar } from "@/components/dashboard/MarketContextBar";
+import { TrendingTokens } from "@/components/dashboard/TrendingTokens";
+import { StablecoinHealth } from "@/components/dashboard/StablecoinHealth";
 import { PortfolioTimeline } from "@/components/portfolio/PortfolioTimeline";
 import { CollapsibleSection } from "@/components/common/CollapsibleSection";
 import { DashboardSkeleton } from "@/components/common/Skeleton";
@@ -265,6 +268,9 @@ export function OverviewTab() {
           </CollapsibleSection>
         ) : null}
 
+        <MarketContextBar />
+        <StablecoinHealth portfolio={portfolio} />
+        <TrendingTokens />
       </div>
     </>
   );

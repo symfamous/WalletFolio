@@ -2,6 +2,7 @@
 
 import { usePWAData } from "@/components/pwa/PWAContext";
 import { PerpPositions } from "@/components/portfolio/PerpPositions";
+import { FundingRates } from "@/components/dashboard/FundingRates";
 import { DashboardSkeleton } from "@/components/common/Skeleton";
 import { Activity } from "lucide-react";
 import { TabHero } from "@/components/pwa/TabHero";
@@ -26,6 +27,8 @@ export function TradingTab() {
           <PerpPositions data={perpsData ?? null} isLoading={perpsLoading} />
         </div>
       )}
+
+      <FundingRates highlightCoins={(perpsData?.allPositions ?? []).map((p) => p.coin)} />
     </div>
   );
 }
