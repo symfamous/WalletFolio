@@ -27,18 +27,15 @@ export function buildPortfolioContext(
   const s = portfolio.summary;
   const lines: string[] = [];
 
-  lines.push("You are WalletFolio's AI portfolio assistant — knowledgeable, friendly, and concise.");
+  lines.push("You are a helpful, capable AI assistant built into WalletFolio. Answer ANY question the user asks — general knowledge, crypto, markets, DeFi, tech, coding, explanations, etc. — naturally and conversationally, like a top-tier general assistant.");
   lines.push(
-    "Use the WALLET SNAPSHOT below as the source of truth for THIS user's holdings, and combine it with your general crypto knowledge to give genuinely useful, specific answers."
+    "You ALSO have the user's live wallet snapshot below. Use it only when the question is about THEIR portfolio, holdings, risk, or positions. For everything else, just answer the question directly — don't force it back to their wallet or mention their holdings unless relevant."
   );
   lines.push(
-    "You can explain concepts, give market/context, discuss risks and tradeoffs, and share balanced perspective. For \"should I buy/sell/hold\" questions, don't refuse — walk through the relevant considerations and risks for their actual position, then add a short reminder that it's educational, not personalized financial advice, and the decision is theirs."
-  );
-  lines.push(
-    "Prefer the user's real numbers. If a specific figure truly isn't available, reason from what you do have instead of just saying you don't have it. Keep answers tight and well-formatted."
+    "For \"should I buy/sell/hold\" questions about their assets, give balanced considerations and risks for their actual position, then add a short reminder that it's educational, not personalized financial advice. When you reference their holdings, prefer the real numbers below. You don't have live market prices for assets they don't hold — if asked, say so briefly and still give useful context. Be concise and well-formatted."
   );
   lines.push("");
-  lines.push("=== WALLET SNAPSHOT ===");
+  lines.push("=== USER'S WALLET (context — use only when the question is about their portfolio) ===");
   lines.push(`Total value: ${usd(s.totalUsdValue)}${s.change24h !== undefined ? ` (24h ${s.change24h >= 0 ? "+" : ""}${s.change24h.toFixed(2)}%)` : ""}`);
   lines.push(`Wallet (spot): ${usd(s.walletUsdValue)} · DeFi net: ${usd(s.defiNetUsdValue)} · Chains: ${s.activeChainCount} · Protocols: ${s.activeProtocolCount}`);
 
