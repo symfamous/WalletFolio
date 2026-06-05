@@ -13,7 +13,7 @@ interface CGItem {
     name?: string;
     thumb?: string;
     market_cap_rank?: number;
-    data?: { price_change_percentage_24h?: { usd?: number } };
+    data?: { price?: number; price_change_percentage_24h?: { usd?: number } };
   };
 }
 
@@ -30,6 +30,7 @@ export async function GET() {
       name: c.item?.name ?? "",
       thumb: c.item?.thumb ?? "",
       rank: c.item?.market_cap_rank ?? null,
+      price: typeof c.item?.data?.price === "number" ? c.item.data.price : null,
       change24h: c.item?.data?.price_change_percentage_24h?.usd ?? null,
     }));
     return NextResponse.json(

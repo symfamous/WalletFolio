@@ -4,6 +4,7 @@ import { AddressInput } from "@/components/wallet/AddressInput";
 import { usePWAData } from "@/components/pwa/PWAContext";
 import { TabHero } from "@/components/pwa/TabHero";
 import { WalletManager } from "@/components/wallet/WalletManager";
+import { PushAlertsToggle } from "@/components/intelligence/PushAlertsToggle";
 import { Card } from "@/components/ui/Card";
 import { useWallets } from "@/hooks/useWallets";
 import { cn, formatUSD } from "@/lib/utils";
@@ -27,6 +28,8 @@ export function SettingsTab() {
   return (
     <div className="space-y-5 px-4 pt-0 pb-24">
       <TabHero title="Tools" address={address} totalValue={portfolio?.summary.totalUsdValue} />
+
+      {address ? <PushAlertsToggle address={address} /> : null}
 
       <Card noPadding className="overflow-hidden">
         <div className="flex items-center gap-2 border-b border-border bg-surface-raised/30 px-4 py-3">

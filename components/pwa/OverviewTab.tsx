@@ -14,11 +14,18 @@ import {
   Layers,
   ShieldAlert,
   Wallet,
+  Share2,
 } from "lucide-react";
 import { usePWAData } from "@/components/pwa/PWAContext";
 import { MarketContextBar } from "@/components/dashboard/MarketContextBar";
 import { TrendingTokens } from "@/components/dashboard/TrendingTokens";
+import { EarlyTrends } from "@/components/dashboard/EarlyTrends";
 import { StablecoinHealth } from "@/components/dashboard/StablecoinHealth";
+import { BenchmarkCard } from "@/components/dashboard/BenchmarkCard";
+import { LiveTicker } from "@/components/dashboard/LiveTicker";
+import { PnlCard } from "@/components/pwa/PnlCard";
+import { ShareCardModal } from "@/components/shell/ShareCardModal";
+import { Card } from "@/components/ui/Card";
 import { PortfolioTimeline } from "@/components/portfolio/PortfolioTimeline";
 import { CollapsibleSection } from "@/components/common/CollapsibleSection";
 import { DashboardSkeleton } from "@/components/common/Skeleton";
@@ -146,6 +153,7 @@ export function OverviewTab() {
   } = usePWAData();
   const animatedValue = useCountUp(portfolio?.summary.totalUsdValue);
   const showLocal = currency !== "USD";
+  const [shareOpen, setShareOpen] = useState(false);
 
   if (!address) {
     return (
@@ -180,6 +188,7 @@ export function OverviewTab() {
     .sort((a, b) => b.totalUsdValue - a.totalUsdValue)
     .slice(0, 8)
     .map((h) => ({ symbol: h.symbol, pct: (h.totalUsdValue / totalVal) * 100 }));
+  const topAssets = allocItems.slice(0, 6).map((h) => h.symbol);
   const riskState = intelligence?.risk.overallState ?? "Safe";
   const risk = getRiskStatePresentation(riskState);
   const topReason = intelligence?.risk.topReason ?? "Risk data will appear after the portfolio loads.";
@@ -193,6 +202,8 @@ export function OverviewTab() {
           totalValue={s.totalUsdValue}
           change24h={s.change24h}
         />
+
+        <LiveTicker symbols={topAssets} />
 
         {providerStatus?.zerion === "partial" && (
           <div className="rounded-xl border border-warning/20 bg-warning/5 px-3 py-2 flex items-center gap-2">
@@ -269,9 +280,41 @@ export function OverviewTab() {
         ) : null}
 
         <MarketContextBar />
+        <BenchmarkCard address={address} />
         <StablecoinHealth portfolio={portfolio} />
         <TrendingTokens />
+        <EarlyTrends />
+
+        {/* Profit & Loss (mobile-optimized) */}
+        <PnlCard address={address} portfolio={portfolio} />
+
+        {/* Share your portfolio */}
+        <Card>
+          <div className="flex items-center justify-between gap-3">
+            <div className="min-w-0">
+              <h2 className="text-sm font-semibold text-text-hi">Share your portfolio</h2>
+              <p className="mt-0.5 text-xs text-text-lo">Generate a card with your total balance to save or post.</p>
+            </div>
+            <button
+              type="button"
+              onClick={() => setShareOpen(true)}
+              className="inline-flex flex-shrink-0 items-center gap-1.5 rounded-[10px] bg-accent px-3 py-2 text-sm font-medium text-white transition-colors hover:bg-accent-hover"
+            >
+              <Share2 className="h-4 w-4" /> Share
+            </button>
+          </div>
+        </Card>
       </div>
+
+      <ShareCardModal
+        open={shareOpen}
+        onClose={() => setShareOpen(false)}
+        name={`${address.slice(0, 6)}…${address.slice(-4)}`}
+        totalUsd={s.totalUsdValue}
+        change24h={s.change24h}
+        topAssets={topAssets}
+        compact
+      />
     </>
   );
 }

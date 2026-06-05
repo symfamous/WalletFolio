@@ -1,7 +1,7 @@
 "use client";
 
-import { useEffect, useMemo, useState, type PointerEvent as ReactPointerEvent } from "react";
-import { AnimatePresence, motion, useMotionValue, useReducedMotion, useSpring, useTransform } from "framer-motion";
+import { useEffect, useMemo, useState } from "react";
+import { AnimatePresence, motion, useReducedMotion } from "framer-motion";
 import {
   Activity,
   ArrowLeftRight,
@@ -378,26 +378,6 @@ function AnimatedGraph({
 }) {
   const reduceMotion = useReducedMotion();
   const [scope, setScope] = useState<"local" | "vault">(expanded ? "vault" : "local");
-  const pointerX = useMotionValue(0);
-  const pointerY = useMotionValue(0);
-  const smoothX = useSpring(pointerX, { stiffness: 110, damping: 22, mass: 0.45 });
-  const smoothY = useSpring(pointerY, { stiffness: 110, damping: 22, mass: 0.45 });
-  const rotateX = useTransform(smoothY, [-0.5, 0.5], [4.5, -4.5]);
-  const rotateY = useTransform(smoothX, [-0.5, 0.5], [-5.5, 5.5]);
-  const atmosphereX = useTransform(smoothX, [-0.5, 0.5], [-20, 20]);
-  const atmosphereY = useTransform(smoothY, [-0.5, 0.5], [-16, 16]);
-
-  function handlePointerMove(event: ReactPointerEvent<HTMLDivElement>) {
-    if (reduceMotion) return;
-    const bounds = event.currentTarget.getBoundingClientRect();
-    pointerX.set((event.clientX - bounds.left) / bounds.width - 0.5);
-    pointerY.set((event.clientY - bounds.top) / bounds.height - 0.5);
-  }
-
-  function resetPerspective() {
-    pointerX.set(0);
-    pointerY.set(0);
-  }
 
   const graphNotes = useMemo(() => {
     const local = [selected, ...links.slice(0, 6), ...backlinks.slice(0, 5)];
@@ -446,13 +426,13 @@ function AnimatedGraph({
     .filter((edge, index, all) => all.findIndex((candidate) => candidate.key === edge.key) === index);
 
   return (
-    <div className="rounded-xl border border-border bg-bg/22 p-3">
+    <div className="rounded-[12px] border border-border bg-surface p-3 shadow-card">
       <div className="flex items-center justify-between gap-2">
         <div className="flex items-center gap-2">
           <Network className="h-3.5 w-3.5 text-accent" />
           <p className="text-[10px] uppercase tracking-[0.15em] text-text-lo">Graph view</p>
         </div>
-        <div className="flex rounded-lg border border-border bg-surface/60 p-0.5">
+        <div className="flex rounded-lg border border-border bg-surface-raised p-0.5">
           {(["local", "vault"] as const).map((option) => (
             <button
               key={option}
@@ -469,82 +449,33 @@ function AnimatedGraph({
         </div>
       </div>
       <div className={cn(
-        "relative mt-3 overflow-hidden rounded-xl border border-border/70 bg-bg/40 bg-dots [perspective:1050px]",
-        expanded ? "h-[min(62vh,620px)] min-h-[430px]" : "h-[300px]"
-      )}
-        onPointerMove={handlePointerMove}
-        onPointerLeave={resetPerspective}
-      >
-        <motion.div
-          aria-hidden="true"
-          style={{ x: atmosphereX, y: atmosphereY }}
-          className="pointer-events-none absolute -inset-16 bg-[radial-gradient(circle_at_50%_46%,rgb(var(--accent)/0.13),transparent_31%),radial-gradient(circle_at_76%_28%,rgb(var(--accent)/0.06),transparent_22%)] opacity-80"
-        />
-        <motion.div
-          className="absolute inset-0"
-          style={reduceMotion ? undefined : { rotateX, rotateY, transformStyle: "preserve-3d" }}
-        >
-          <motion.div
-            aria-hidden="true"
-            className="absolute left-1/2 top-1/2 h-[56%] w-[56%] rounded-full border border-accent/[0.07]"
-            style={{ x: "-50%", y: "-50%", z: 5 }}
-            animate={reduceMotion ? undefined : { rotate: 360 }}
-            transition={{ duration: 52, ease: "linear", repeat: Infinity }}
-          />
-          <motion.div
-            aria-hidden="true"
-            className="absolute left-1/2 top-1/2 h-[84%] w-[84%] rounded-full border border-dashed border-accent/[0.075]"
-            style={{ x: "-50%", y: "-50%", z: 2 }}
-            animate={reduceMotion ? undefined : { rotate: -360 }}
-            transition={{ duration: 78, ease: "linear", repeat: Infinity }}
-          />
-          <motion.div
-            aria-hidden="true"
-            className="absolute left-1/2 top-1/2 h-40 w-40 rounded-full border border-accent/12 bg-accent/[0.045] blur-[1px]"
-            style={{ x: "-50%", y: "-50%", z: 48 }}
-            animate={reduceMotion ? undefined : { scale: [1, 1.15, 1], opacity: [0.42, 0.94, 0.42] }}
-            transition={{ duration: 4.5, ease: "easeInOut", repeat: Infinity }}
-          />
-        <svg className="absolute inset-0 h-full w-full" style={{ transform: "translateZ(16px)" }} aria-hidden="true">
+        "relative mt-3 overflow-hidden rounded-xl border border-border bg-bg bg-dots",
+        expanded ? "h-[min(56vh,560px)] min-h-[400px]" : "h-[300px]"
+      )}>
+        <svg className="absolute inset-0 h-full w-full" aria-hidden="true">
           {edges.map((edge) => {
             const from = coordinates.get(edge.from);
             const to = coordinates.get(edge.to);
             if (!from || !to) return null;
             const highlighted = edge.from === selected.id || edge.to === selected.id;
             return (
-              <g key={`${scope}:${edge.key}`}>
-                {highlighted ? (
-                  <line
-                    x1={`${from.x}%`}
-                    y1={`${from.y}%`}
-                    x2={`${to.x}%`}
-                    y2={`${to.y}%`}
-                    stroke="rgb(var(--accent) / 0.13)"
-                    strokeWidth={6}
-                  />
-                ) : null}
-                <motion.line
-                  x1={`${from.x}%`}
-                  y1={`${from.y}%`}
-                  x2={`${to.x}%`}
-                  y2={`${to.y}%`}
-                  stroke={highlighted ? "rgb(var(--accent) / 0.58)" : "rgb(var(--text-lo) / 0.17)"}
-                  strokeWidth={highlighted ? 1.5 : 1}
-                  strokeDasharray={highlighted ? "5 8" : undefined}
-                  initial={{ pathLength: 0, opacity: 0 }}
-                  animate={reduceMotion || !highlighted
-                    ? { pathLength: 1, opacity: 1 }
-                    : { pathLength: 1, opacity: 1, strokeDashoffset: [0, -52] }}
-                  transition={reduceMotion || !highlighted
-                    ? { duration: reduceMotion ? 0 : 0.42 }
-                    : { pathLength: { duration: 0.42 }, strokeDashoffset: { duration: 2.1, ease: "linear", repeat: Infinity } }}
-                />
-              </g>
+              <motion.line
+                key={`${scope}:${edge.key}`}
+                x1={`${from.x}%`}
+                y1={`${from.y}%`}
+                x2={`${to.x}%`}
+                y2={`${to.y}%`}
+                stroke={highlighted ? "rgb(var(--accent) / 0.5)" : "rgb(var(--text-lo) / 0.14)"}
+                strokeWidth={highlighted ? 1.5 : 1}
+                initial={reduceMotion ? false : { pathLength: 0, opacity: 0 }}
+                animate={{ pathLength: 1, opacity: 1 }}
+                transition={{ duration: reduceMotion ? 0 : 0.35 }}
+              />
             );
           })}
         </svg>
         <AnimatePresence mode="popLayout">
-          {placements.map(({ note, x, y, depth, layer }, index) => {
+          {placements.map(({ note, x, y, layer }, index) => {
             const active = note.id === selected.id;
             const Icon = KIND_META[note.kind].icon;
             return (
@@ -553,19 +484,19 @@ function AnimatedGraph({
                 key={note.id}
                 type="button"
                 onClick={() => onSelect(note.id)}
-                initial={{ opacity: 0, scale: 0.65, x: "-50%", y: "-50%", z: 0 }}
-                animate={{ opacity: 1, scale: 1, left: `${x}%`, top: `${y}%`, x: "-50%", y: "-50%", z: depth }}
-                exit={{ opacity: 0, scale: 0.7, z: 0 }}
-                transition={{ type: "spring", damping: 24, stiffness: 230, delay: reduceMotion ? 0 : Math.min(index * 0.018, 0.14) }}
-                whileHover={reduceMotion ? undefined : { scale: active ? 1.04 : 1.1 }}
+                initial={reduceMotion ? false : { opacity: 0, scale: 0.8, x: "-50%", y: "-50%" }}
+                animate={{ opacity: 1, scale: 1, left: `${x}%`, top: `${y}%`, x: "-50%", y: "-50%" }}
+                exit={{ opacity: 0, scale: 0.85 }}
+                transition={{ type: "spring", damping: 26, stiffness: 240, delay: reduceMotion ? 0 : Math.min(index * 0.015, 0.12) }}
+                whileHover={reduceMotion ? undefined : { scale: 1.04 }}
                 className={cn(
-                  "absolute z-[1] flex items-center gap-1.5 truncate rounded-full border text-[10px] backdrop-blur-sm",
-                  expanded ? "max-w-[145px] px-3 py-2" : "max-w-[112px] px-2.5 py-1.5",
+                  "absolute z-[1] flex items-center gap-1.5 truncate rounded-full border text-[10px] transition-colors",
+                  expanded ? "max-w-[150px] px-3 py-1.5" : "max-w-[112px] px-2.5 py-1.5",
                   active
-                    ? "border-accent/48 bg-accent/22 text-accent shadow-[0_18px_40px_rgb(var(--accent)/0.18),0_0_32px_rgb(var(--accent)/0.24)]"
+                    ? "border-accent/40 bg-accent/15 text-accent"
                     : layer === "inner"
-                      ? "border-accent/18 bg-surface/92 text-text-mid shadow-[0_10px_26px_rgb(var(--bg)/0.32)] hover:border-accent/35 hover:text-accent"
-                      : "border-border/80 bg-surface/82 text-text-lo shadow-[0_6px_16px_rgb(var(--bg)/0.24)] hover:border-accent/25 hover:text-text-mid"
+                      ? "border-border bg-surface text-text-mid hover:border-accent/30 hover:text-accent"
+                      : "border-border bg-surface-raised text-text-lo hover:border-border-strong hover:text-text-mid"
                 )}
               >
                 <Icon className="h-3 w-3 flex-shrink-0" />
@@ -577,7 +508,6 @@ function AnimatedGraph({
         {scope === "local" && graphNotes.length === 1 ? (
           <p className="absolute bottom-3 left-0 right-0 text-center text-[10px] text-text-lo">No linked notes for this page yet.</p>
         ) : null}
-        </motion.div>
       </div>
     </div>
   );
@@ -763,7 +693,7 @@ export function KnowledgeVault({
   }
 
   return (
-    <div className="overflow-hidden rounded-[18px] border border-accent/10 bg-[linear-gradient(180deg,rgb(var(--surface)/0.86),rgb(var(--bg)/0.96))]">
+    <div className="overflow-hidden rounded-[12px] border border-border bg-surface shadow-card">
       <div className="flex flex-wrap items-center justify-between gap-3 border-b border-border/60 px-4 py-3">
         <div className="flex items-center gap-2">
           <FolderTree className="h-4 w-4 text-accent" />
@@ -804,7 +734,7 @@ export function KnowledgeVault({
       </div>
 
       {editorOpen ? (
-        <div className="border-b border-border/60 bg-bg/20 p-4">
+        <div className="border-b border-border bg-surface-raised/30 p-4">
           <div className="mx-auto max-w-3xl space-y-3 rounded-xl border border-accent/14 bg-surface/70 p-4">
             <div className="flex items-center justify-between gap-3">
               <p className="text-xs font-semibold text-text-hi">{editingId ? "Edit note" : "New note"}</p>
@@ -851,7 +781,7 @@ export function KnowledgeVault({
             onSelect={setSelectedId}
             expanded
           />
-          <aside className="rounded-xl border border-border bg-bg/18 p-4">
+          <aside className="rounded-xl border border-border bg-surface-raised/30 p-4">
             <GraphNoteInspector selected={selected} links={links} backlinks={backlinks} onSelect={setSelectedId} />
           </aside>
         </div>
@@ -991,7 +921,7 @@ export function KnowledgeVault({
         <aside className="order-first border-b border-border/50 p-4 lg:order-none lg:border-b-0">
           <AnimatedGraph notes={notes} selected={selected} links={links} backlinks={backlinks} onSelect={setSelectedId} />
 
-          <div className="mt-4 rounded-xl border border-border bg-bg/20 p-3">
+          <div className="mt-4 rounded-xl border border-border bg-surface-raised/30 p-3">
             <div className="flex items-center justify-between">
               <p className="text-[10px] uppercase tracking-[0.14em] text-text-lo">Activity index</p>
               {history.isFetching ? <Loader2 className="h-3 w-3 animate-spin text-accent" /> : null}

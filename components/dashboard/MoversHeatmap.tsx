@@ -41,11 +41,24 @@ export function MoversHeatmap({ portfolio }: { portfolio: Portfolio }) {
     const priced = portfolio.aggregated.filter(
       (h) => h.priceAvailable && h.totalUsdValue > 0 && h.priceChange24h !== undefined && !h.isStablecoin
     );
-    const mapped: Mover[] = priced.map((h) => ({
-      key: h.aggregateKey,
-      symbol: h.symbol,
-      usd: h.totalUsdValue,
-      change: h.priceChange24h ?? 0,
+    // A mover is a TOKEN, not a holding-instance. The same asset can appear as
+    // several aggregates (e.g. HYPE on HyperEVM + HYPE on Hyperliquid), each with
+    // its own 24h value — which otherwise lets one symbol show up in BOTH gainers
+    // and losers. Combine by symbol with a USD-weighted 24h change.
+    const bySymbol = new Map<string, { symbol: string; usd: number; weightedChange: number; weightUsd: number }>();
+    for (const h of priced) {
+      const key = h.symbol.toUpperCase();
+      const entry = bySymbol.get(key) ?? { symbol: h.symbol, usd: 0, weightedChange: 0, weightUsd: 0 };
+      entry.usd += h.totalUsdValue;
+      entry.weightedChange += (h.priceChange24h ?? 0) * h.totalUsdValue;
+      entry.weightUsd += h.totalUsdValue;
+      bySymbol.set(key, entry);
+    }
+    const mapped: Mover[] = [...bySymbol.values()].map((e) => ({
+      key: e.symbol.toUpperCase(),
+      symbol: e.symbol,
+      usd: e.usd,
+      change: e.weightUsd > 0 ? e.weightedChange / e.weightUsd : 0,
     }));
     return {
       gainers: mapped.filter((m) => m.change > 0).sort((a, b) => b.change - a.change).slice(0, 5),

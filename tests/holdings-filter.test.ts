@@ -315,3 +315,54 @@ test("portfolio totals do not double-count Hyperliquid perps when already presen
   assert.equal(augmented?.summary.totalUsdValue, 250);
   assert.equal(augmented?.walletPositions.length, 1);
 });
+
+test("portfolio total drops when live Hyperliquid perp value falls below the snapshot", () => {
+  const portfolio = makePortfolio([
+    makePosition({ id: "eth", symbol: "ETH", name: "Ether", balance: 1, price: 1000, usdValue: 1000 }),
+    makePosition({
+      id: "hyperliquid-perp-equity",
+      symbol: "USDC",
+      name: "Hyperliquid Perp Equity",
+      contractAddress: "hyperliquid-perp-equity",
+      balance: 250,
+      price: 1,
+      usdValue: 250,
+      priceAvailable: true,
+      dataSource: "hyperliquid",
+      protocolId: "hyperliquid-perps",
+      protocolName: "Hyperliquid Perps",
+    }),
+  ]);
+
+  // Snapshot total is 1250; live perp equity dropped from 250 to 200.
+  const augmented = portfolioWithPerpsAccountValue(portfolio, makePerpsResponse(200));
+
+  assert.equal(augmented?.summary.totalUsdValue, 1200);
+  assert.equal(augmented?.summary.walletUsdValue, 1200);
+  const perp = augmented?.walletPositions.find((p) => p.id === "hyperliquid-perp-equity");
+  assert.equal(perp?.usdValue, 200);
+  assert.equal(augmented?.walletPositions.length, 2);
+});
+
+test("portfolio keeps its snapshot perp value when no live perps data is available", () => {
+  const portfolio = makePortfolio([
+    makePosition({ id: "eth", symbol: "ETH", name: "Ether", balance: 1, price: 1000, usdValue: 1000 }),
+    makePosition({
+      id: "hyperliquid-perp-equity",
+      symbol: "USDC",
+      name: "Hyperliquid Perp Equity",
+      contractAddress: "hyperliquid-perp-equity",
+      balance: 250,
+      price: 1,
+      usdValue: 250,
+      priceAvailable: true,
+      dataSource: "hyperliquid",
+      protocolId: "hyperliquid-perps",
+      protocolName: "Hyperliquid Perps",
+    }),
+  ]);
+
+  // perps feed still loading (null) — must not zero out the snapshot equity.
+  assert.equal(portfolioWithPerpsAccountValue(portfolio, null)?.summary.totalUsdValue, 1250);
+  assert.equal(portfolioWithPerpsAccountValue(portfolio, undefined)?.summary.totalUsdValue, 1250);
+});

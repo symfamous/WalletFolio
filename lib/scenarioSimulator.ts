@@ -43,6 +43,12 @@ function formatPctLabel(value: number): string {
   return `${sign}${Math.abs(value).toFixed(0)}%`;
 }
 
+function formatUsdShort(value: number): string {
+  if (value >= 1_000_000) return `$${(value / 1_000_000).toFixed(2)}M`;
+  if (value >= 1_000) return `$${(value / 1_000).toFixed(1)}K`;
+  return `$${value.toFixed(0)}`;
+}
+
 function getAllPositions(portfolio: Portfolio): NormalizedPosition[] {
   return [...portfolio.walletPositions, ...portfolio.defiPositions, ...portfolio.liabilities];
 }
@@ -89,6 +95,45 @@ function createSyntheticStablePosition(base: NormalizedPosition | undefined, usd
     isSpam: false,
     isVerified: true,
     dataSource: base?.dataSource ?? "zerion",
+  };
+}
+
+function createSyntheticPerpPosition(base: NormalizedPosition | undefined, usdValue: number, id: string): NormalizedPosition {
+  const chainSlug = base?.chainSlug ?? "ethereum";
+  const chainName = base?.chainName ?? "Ethereum";
+  const chainColor = base?.chainColor ?? "#627EEA";
+  const chainEmoji = base?.chainEmoji ?? "⬡";
+
+  return {
+    id,
+    symbol: "PERP",
+    name: "Perp account equity",
+    logo: undefined,
+    contractAddress: `scenario-perp-${chainSlug}`,
+    decimals: 6,
+    fungibleId: undefined,
+    coingeckoId: undefined,
+    chainSlug,
+    chainName,
+    chainNumericId: base?.chainNumericId,
+    chainColor,
+    chainEmoji,
+    balance: usdValue,
+    rawBalance: String(usdValue),
+    price: 1,
+    priceChange24h: 0,
+    usdValue,
+    priceAvailable: true,
+    source: "wallet",
+    positionType: "wallet",
+    protocolId: "hyperliquid-perps",
+    protocolName: "Hyperliquid",
+    isLiability: false,
+    isNative: false,
+    isStablecoin: false,
+    isSpam: false,
+    isVerified: true,
+    dataSource: "hyperliquid",
   };
 }
 
@@ -527,22 +572,63 @@ function applyStableShift(
 function applyCloseLeverage(
   portfolio: Portfolio,
   perps: PerpsApiResponse | null | undefined
-): { portfolio: Portfolio; perps: PerpsApiResponse | null; assumptions: string[] } {
+): { portfolio: Portfolio; beforePortfolio?: Portfolio; perps: PerpsApiResponse | null; assumptions: string[] } {
   const currentEquity = portfolio.walletPositions.find((position) => position.protocolId === "hyperliquid-perps");
-  const nextPositions = getAllPositions(portfolio).flatMap((position) => {
-    if (position.protocolId !== "hyperliquid-perps") return [position];
-    const stable = createSyntheticStablePosition(position, position.usdValue ?? 0, `${position.id}-closed`);
-    return (position.usdValue ?? 0) > 0 ? [stable] : [];
-  });
+
+  // Path A: perp equity is already tracked as a portfolio position → convert it to cash.
+  if (currentEquity) {
+    const nextPositions = getAllPositions(portfolio).flatMap((position) => {
+      if (position.protocolId !== "hyperliquid-perps") return [position];
+      const stable = createSyntheticStablePosition(position, position.usdValue ?? 0, `${position.id}-closed`);
+      return (position.usdValue ?? 0) > 0 ? [stable] : [];
+    });
+
+    return {
+      portfolio: buildSimulatedPortfolio(portfolio.address, nextPositions),
+      perps: closePerps(perps),
+      assumptions: [
+        "This estimate treats your leveraged position as closed now at its current marked account value.",
+        "Current perp equity is modeled as returning to wallet cash.",
+        "Fees, slippage, and taxes are not modeled.",
+        "If your real settlement asset differs, the bucket result could differ.",
+      ],
+    };
+  }
+
+  // Path B: perp equity lives only in the perps feed (common in the live app). Model the
+  // close against a synthetic baseline that includes the perp equity, so the result shows the
+  // Active-Trades → Safe-Cash shift and the risk drop while keeping net worth unchanged.
+  const perpEquity = Math.max(0, perps?.totalAccountValue ?? 0);
+  if (perpEquity <= NON_ZERO_DELTA_USD) {
+    return {
+      portfolio,
+      perps: closePerps(perps),
+      assumptions: [
+        "This estimate treats your leveraged position as closed now.",
+        "No tracked perp equity was found, so the value effect is treated as minimal — the main change is risk.",
+        "Fees, slippage, and taxes are not modeled.",
+      ],
+    };
+  }
+
+  const base = portfolio.walletPositions[0];
+  const beforePositions = [
+    ...getAllPositions(portfolio),
+    createSyntheticPerpPosition(base, perpEquity, "scenario-perp-equity"),
+  ];
+  const afterPositions = [
+    ...getAllPositions(portfolio),
+    createSyntheticStablePosition(base, perpEquity, "scenario-perp-closed"),
+  ];
 
   return {
-    portfolio: buildSimulatedPortfolio(portfolio.address, nextPositions),
+    portfolio: buildSimulatedPortfolio(portfolio.address, afterPositions),
+    beforePortfolio: buildSimulatedPortfolio(portfolio.address, beforePositions),
     perps: closePerps(perps),
     assumptions: [
-      "This estimate treats your leveraged position as closed now at its current marked account value.",
-      "Current perp equity is modeled as returning to wallet cash.",
-      "Fees, slippage, and taxes are not modeled.",
-      currentEquity ? "If your real settlement asset differs, the bucket result could differ." : "If no tracked perp equity is present, the value effect is treated as minimal.",
+      `This estimate closes your leveraged position at its current marked equity of about ${formatUsdShort(perpEquity)}.`,
+      "That equity is modeled as moving from active trades into wallet cash, so your net worth stays the same while risk drops.",
+      "Fees, slippage, funding, and taxes are not modeled.",
     ],
   };
 }
@@ -706,10 +792,10 @@ function simulateDefinition(
   perps?: PerpsApiResponse | null
 ): PortfolioScenarioResult {
   const goal = chooseGoal(selectedGoal);
-  const beforeRisk = buildUnifiedRiskSummary(portfolio, perps);
-  const beforeStress = buildPortfolioStressSummary(portfolio, perps);
-  const beforeGoalFit = buildPortfolioGoalFitSummary(portfolio, goal, perps);
 
+  // Some scenarios (e.g. closing leverage where the perp equity is only in the perps feed)
+  // model against a synthetic baseline so the before/after composition shift is visible.
+  let beforePortfolio = portfolio;
   let afterPortfolio = portfolio;
   let afterPerps = clonePerps(perps);
   let assumptions: string[] = [];
@@ -717,6 +803,7 @@ function simulateDefinition(
   switch (definition.kind) {
     case "close_leverage": {
       const result = applyCloseLeverage(portfolio, perps);
+      if (result.beforePortfolio) beforePortfolio = result.beforePortfolio;
       afterPortfolio = result.portfolio;
       afterPerps = result.perps;
       assumptions = result.assumptions;
@@ -749,10 +836,14 @@ function simulateDefinition(
     }
   }
 
+  const beforeRisk = buildUnifiedRiskSummary(beforePortfolio, perps);
+  const beforeStress = buildPortfolioStressSummary(beforePortfolio, perps);
+  const beforeGoalFit = buildPortfolioGoalFitSummary(beforePortfolio, goal, perps);
+
   const afterRisk = buildUnifiedRiskSummary(afterPortfolio, afterPerps);
   const afterStress = buildPortfolioStressSummary(afterPortfolio, afterPerps);
   const afterGoalFit = buildPortfolioGoalFitSummary(afterPortfolio, goal, afterPerps);
-  const { deltaUsd, deltaPct } = estimateValueDelta(portfolio, afterPortfolio);
+  const { deltaUsd, deltaPct } = estimateValueDelta(beforePortfolio, afterPortfolio);
 
   return {
     scenarioId: definition.id,
@@ -763,11 +854,11 @@ function simulateDefinition(
     reasonGenerated: definition.reasonGenerated,
     estimatedValueDeltaUsd: deltaUsd,
     estimatedValueDeltaPct: deltaPct,
-    bucketDeltas: buildBucketDeltas(portfolio, afterPortfolio),
+    bucketDeltas: buildBucketDeltas(beforePortfolio, afterPortfolio),
     riskDelta: summarizeRiskDelta(beforeRisk, afterRisk),
     goalFitDelta: summarizeGoalFitDelta(beforeGoalFit, afterGoalFit),
     liquidityDelta: summarizeLiquidityDelta(beforeStress, afterStress),
-    takeaway: buildTakeaway(definition, portfolio, afterRisk, beforeStress, afterStress),
+    takeaway: buildTakeaway(definition, beforePortfolio, afterRisk, beforeStress, afterStress),
     assumptions,
   };
 }

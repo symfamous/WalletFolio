@@ -11,6 +11,9 @@ import { GoalModeCard } from "@/components/intelligence/GoalModeCard";
 import { HiddenFundsScanner } from "@/components/intelligence/HiddenFundsScanner";
 import { HoldingsTable } from "@/components/portfolio/HoldingsTable";
 import { KnowledgeVault } from "@/components/intelligence/KnowledgeVault";
+import { ActivityScore } from "@/components/intelligence/ActivityScore";
+import { AIAssistant } from "@/components/intelligence/AIAssistant";
+import { PushAlertsToggle } from "@/components/intelligence/PushAlertsToggle";
 import { NftHoldings } from "@/components/portfolio/NftHoldings";
 import { PerpPositions } from "@/components/portfolio/PerpPositions";
 import { PortfolioBuckets } from "@/components/portfolio/PortfolioBuckets";
@@ -36,6 +39,10 @@ import { DataTable } from "@/components/ui/DataTable";
 import { Button } from "@/components/ui/Button";
 import { TargetPriceCalculator } from "@/components/intelligence/TargetPriceCalculator";
 import { WalletHistory } from "@/components/wallet/WalletHistory";
+import { GasAnalytics } from "@/components/wallet/GasAnalytics";
+import { BenchmarkCard } from "@/components/dashboard/BenchmarkCard";
+import { LiveTicker } from "@/components/dashboard/LiveTicker";
+import { EarlyTrends } from "@/components/dashboard/EarlyTrends";
 import { WalletSafetyScanner } from "@/components/intelligence/WalletSafetyScanner";
 import { ApprovalsScanner } from "@/components/intelligence/ApprovalsScanner";
 import { WalletManager } from "@/components/wallet/WalletManager";
@@ -121,6 +128,8 @@ export function OverviewView({
         hasRenderablePortfolio={s.totalUsdValue > 0 || portfolio.aggregated.length > 0 || portfolio.protocols.length > 0}
       />
 
+      <LiveTicker symbols={portfolio.aggregated.slice(0, 8).map((h) => h.symbol)} />
+
       <MarketContextBar />
 
       {/* Hero: portfolio chart + bento KPI tiles */}
@@ -166,6 +175,12 @@ export function OverviewView({
         <MoversHeatmap portfolio={portfolio} />
       </section>
 
+      {/* Vs market benchmark + gas spent */}
+      <section className="grid gap-4 xl:grid-cols-2">
+        <BenchmarkCard address={address} />
+        <GasAnalytics address={address} />
+      </section>
+
       <section className="grid gap-4 xl:grid-cols-[1.45fr_1fr]">
         <div className="space-y-3">
           <div className="flex items-center justify-between gap-3">
@@ -192,8 +207,10 @@ export function OverviewView({
 
       <section className="grid gap-4 xl:grid-cols-2">
         <TrendingTokens />
-        <StablecoinHealth portfolio={portfolio} />
+        <EarlyTrends />
       </section>
+
+      <StablecoinHealth portfolio={portfolio} />
 
       <section className="rounded-[12px] border border-border bg-surface px-4 py-4 shadow-card">
         <div className={cn(
@@ -321,13 +338,17 @@ export function IntelligenceView({
   hasHistory: boolean;
   summary: string;
 }) {
-  const [workspaceTab, setWorkspaceTab] = useState<"analysis" | "vault" | "safety">("analysis");
-  const workspaceTitle = workspaceTab === "analysis" ? "Analysis Workspace" : workspaceTab === "vault" ? "Wallet Vault" : "Wallet Safety Scanner";
+  const [workspaceTab, setWorkspaceTab] = useState<"analysis" | "assistant" | "vault" | "safety">("analysis");
+  const workspaceTitle = workspaceTab === "analysis" ? "Analysis Workspace"
+    : workspaceTab === "assistant" ? "AI Assistant"
+    : workspaceTab === "vault" ? "Wallet Vault" : "Wallet Safety Scanner";
   const workspaceSummary = workspaceTab === "analysis"
     ? summary
-    : workspaceTab === "vault"
-      ? "Connected notes for holdings, protocols, networks, trades, and transactions."
-      : "Review approval transactions and wallet activity signals requiring attention.";
+    : workspaceTab === "assistant"
+      ? "Ask anything about your wallet — answers are grounded in your live holdings."
+      : workspaceTab === "vault"
+        ? "Connected notes for holdings, protocols, networks, trades, and transactions."
+        : "Review approval transactions and wallet activity signals requiring attention.";
 
   return (
     <div id="intelligence" className="space-y-3.5">
@@ -363,7 +384,7 @@ export function IntelligenceView({
         summary={workspaceSummary}
         action={
           <div className="flex rounded-full border border-border bg-surface-raised p-1">
-            {(["analysis", "vault", "safety"] as const).map((tab) => (
+            {(["analysis", "assistant", "vault", "safety"] as const).map((tab) => (
               <button
                 key={tab}
                 type="button"
@@ -379,7 +400,9 @@ export function IntelligenceView({
           </div>
         }
       >
-        {workspaceTab === "vault" ? (
+        {workspaceTab === "assistant" ? (
+          <AIAssistant portfolio={portfolio} perps={perpsData} intelligence={intelligence ?? undefined} />
+        ) : workspaceTab === "vault" ? (
           <KnowledgeVault address={address} portfolio={portfolio} perps={perpsData} />
         ) : workspaceTab === "safety" ? (
           <div className="space-y-4">
@@ -387,15 +410,18 @@ export function IntelligenceView({
             <WalletSafetyScanner address={address} />
           </div>
         ) : intelligence ? (
-          <PortfolioIntelligence
-            pi={intelligence}
-            portfolio={portfolio}
-            format={format}
-            currency={currency}
-            attribution={attribution as never}
-            hasHistory={hasHistory}
-            tabPickerStyle="grid"
-          />
+          <div className="space-y-4">
+            <ActivityScore address={address} portfolio={portfolio} perps={perpsData} />
+            <PortfolioIntelligence
+              pi={intelligence}
+              portfolio={portfolio}
+              format={format}
+              currency={currency}
+              attribution={attribution as never}
+              hasHistory={hasHistory}
+              tabPickerStyle="grid"
+            />
+          </div>
         ) : (
           <p className="text-sm text-text-mid">Portfolio intelligence becomes available as soon as tracked data is ready.</p>
         )}
@@ -664,6 +690,7 @@ export function PatternsView({
 }
 
 export function SettingsView({
+  address,
   hasPriced,
   portfolio,
   format,
@@ -671,6 +698,7 @@ export function SettingsView({
   setCurrency,
   rates,
 }: {
+  address: string;
   hasPriced: boolean;
   portfolio: Portfolio;
   format: (usd: number) => string;
@@ -684,6 +712,7 @@ export function SettingsView({
         title="Tools"
         subtitle="Frontend-only utilities and display preferences."
       />
+      {address ? <PushAlertsToggle address={address} /> : null}
       <div className="grid gap-3.5 xl:grid-cols-[minmax(0,1fr)_340px]">
         {hasPriced ? (
           <div className="space-y-3.5">

@@ -47,13 +47,14 @@ export function FundingRates({ highlightCoins = [] }: { highlightCoins?: string[
         </span>
       </button>
       {open ? (
-      <table className="w-full border-collapse">
+      <div className="overflow-x-auto">
+      <table className="w-full min-w-[420px] border-collapse">
         <thead>
           <tr className="border-b border-border">
-            <th className="px-4 py-2 text-left text-[11px] font-medium uppercase tracking-wide text-text-lo">Market</th>
-            <th className="px-4 py-2 text-right text-[11px] font-medium uppercase tracking-wide text-text-lo">Mark</th>
-            <th className="px-4 py-2 text-right text-[11px] font-medium uppercase tracking-wide text-text-lo">Funding APR</th>
-            <th className="px-4 py-2 text-right text-[11px] font-medium uppercase tracking-wide text-text-lo">Open Interest</th>
+            <th className="px-3 py-2 text-left text-[11px] font-medium uppercase tracking-wide text-text-lo">Market</th>
+            <th className="px-3 py-2 text-right text-[11px] font-medium uppercase tracking-wide text-text-lo">Mark</th>
+            <th className="px-3 py-2 text-right text-[11px] font-medium uppercase tracking-wide text-text-lo">Funding APR</th>
+            <th className="px-3 py-2 text-right text-[11px] font-medium uppercase tracking-wide text-text-lo whitespace-nowrap">Open Interest</th>
           </tr>
         </thead>
         <tbody>
@@ -61,22 +62,23 @@ export function FundingRates({ highlightCoins = [] }: { highlightCoins?: string[
             const pinned = highlight.has(m.coin.toUpperCase());
             return (
               <tr key={m.coin} className={cn("border-b border-border last:border-0", pinned && "bg-accent/[0.05]")}>
-                <td className="px-4 py-2.5 text-sm">
+                <td className="px-3 py-2.5 text-sm whitespace-nowrap">
                   <span className="font-medium text-text-hi">{m.coin}</span>
                   {pinned ? <span className="ml-2 text-[10px] uppercase tracking-wide text-accent">held</span> : null}
                 </td>
-                <td className="num px-4 py-2.5 text-right text-sm text-text-mid">
+                <td className="num px-3 py-2.5 text-right text-sm text-text-mid whitespace-nowrap">
                   ${m.markPx >= 1 ? m.markPx.toLocaleString("en-US", { maximumFractionDigits: 2 }) : m.markPx.toPrecision(4)}
                 </td>
-                <td className={cn("num px-4 py-2.5 text-right text-sm font-medium", m.fundingApr >= 0 ? "text-success" : "text-danger")}>
+                <td className={cn("num px-3 py-2.5 text-right text-sm font-medium whitespace-nowrap", m.fundingApr >= 0 ? "text-success" : "text-danger")}>
                   {m.fundingApr >= 0 ? "+" : ""}{m.fundingApr.toFixed(2)}%
                 </td>
-                <td className="num px-4 py-2.5 text-right text-sm text-text-mid">{compactUsd(m.openInterestUsd)}</td>
+                <td className="num px-3 py-2.5 text-right text-sm text-text-mid whitespace-nowrap">{compactUsd(m.openInterestUsd)}</td>
               </tr>
             );
           })}
         </tbody>
       </table>
+      </div>
       ) : null}
     </div>
   );

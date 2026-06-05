@@ -137,6 +137,23 @@ export function aggregateHoldings(positions: NormalizedPosition[]): AggregatedHo
     agg.positions.push(pos);
   }
 
+  // A holding can span several positions (same asset across chains, or grouped by
+  // exposure like ETH+stETH+WETH). Its 24h change must be the USD-weighted blend of
+  // its positions' changes — not whichever position happened to be processed last,
+  // which made dust or wrapped legs dictate the headline number.
+  for (const agg of map.values()) {
+    let weightedChange = 0;
+    let weightUsd = 0;
+    for (const pos of agg.positions) {
+      if (pos.priceChange24h === undefined) continue;
+      const usd = pos.usdValue ?? 0;
+      if (usd <= 0) continue;
+      weightedChange += pos.priceChange24h * usd;
+      weightUsd += usd;
+    }
+    if (weightUsd > 0) agg.priceChange24h = weightedChange / weightUsd;
+  }
+
   return Array.from(map.values()).sort((a, b) => {
     if (a.totalUsdValue > 0 && b.totalUsdValue > 0) return b.totalUsdValue - a.totalUsdValue;
     if (a.totalUsdValue > 0) return -1;

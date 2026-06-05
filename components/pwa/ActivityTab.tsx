@@ -2,6 +2,7 @@
 
 import { usePWAData }    from "@/components/pwa/PWAContext";
 import { WalletHistory } from "@/components/wallet/WalletHistory";
+import { GasAnalytics }  from "@/components/wallet/GasAnalytics";
 import { TabHero }       from "@/components/pwa/TabHero";
 import { getActivityFeedModeForDashboard } from "@/lib/dashboardViewMode";
 
@@ -20,6 +21,7 @@ export function ActivityTab() {
         />
       </div>
       <div className="px-4 space-y-4">
+        <GasAnalytics address={address} />
         <WalletHistory
           address={address}
           initialViewMode={activityConfig.defaultViewMode}

@@ -4,6 +4,16 @@ import { Flame } from "lucide-react";
 import { useTrending } from "@/hooks/useTrending";
 import { cn } from "@/lib/utils";
 
+/** Format a USD price that may be a normal number or a tiny sub-cent value. */
+function formatTrendingPrice(price: number): string {
+  if (price <= 0) return "$0";
+  if (price >= 1) return `$${price.toLocaleString("en-US", { maximumFractionDigits: 2 })}`;
+  if (price >= 0.01) return `$${price.toFixed(4)}`;
+  // Sub-cent: show enough significant digits without a long zero run.
+  const decimals = Math.min(12, Math.ceil(-Math.log10(price)) + 3);
+  return `$${price.toFixed(decimals).replace(/0+$/, "")}`;
+}
+
 /** Trending coins (CoinGecko) — ambient "what's hot" widget, free. */
 export function TrendingTokens() {
   const { data } = useTrending();
@@ -33,11 +43,16 @@ export function TrendingTokens() {
               <span className="font-medium text-text-hi">{c.symbol.toUpperCase()}</span>
               <span className="ml-1.5 text-[11px] text-text-lo">{c.name}</span>
             </span>
-            {c.change24h != null ? (
-              <span className={cn("num text-xs font-medium", c.change24h >= 0 ? "text-success" : "text-danger")}>
-                {c.change24h >= 0 ? "+" : ""}{c.change24h.toFixed(1)}%
-              </span>
-            ) : null}
+            <span className="flex flex-col items-end leading-tight">
+              {c.price != null ? (
+                <span className="num text-xs font-medium text-text-hi">{formatTrendingPrice(c.price)}</span>
+              ) : null}
+              {c.change24h != null ? (
+                <span className={cn("num text-[11px] font-medium", c.change24h >= 0 ? "text-success" : "text-danger")}>
+                  {c.change24h >= 0 ? "+" : ""}{c.change24h.toFixed(1)}%
+                </span>
+              ) : null}
+            </span>
           </div>
         ))}
       </div>

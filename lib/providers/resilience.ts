@@ -4,7 +4,6 @@ type ProviderName =
   | "zerion_chains"
   | "zapper"
   | "moralis"
-  | "covalent"
   | "hyperliquid"
   | "dydx"
   | "etherscan"
@@ -84,14 +83,6 @@ const PROVIDER_POLICIES: Record<ProviderName, ProviderPolicy> = {
     failureThreshold: 2,
     cooldownMs: 60_000,
     enabledEnv: "ENABLE_MORALIS",
-    defaultEnabledInDev: true,
-  },
-  covalent: {
-    timeoutMs: 2_500,
-    retries: { rate_limit: 1 },
-    failureThreshold: 2,
-    cooldownMs: 90_000,
-    enabledEnv: "ENABLE_COVALENT",
     defaultEnabledInDev: true,
   },
   hyperliquid: {
