@@ -7,7 +7,7 @@
  * persisted on the server.
  */
 
-export type AIProviderId = "openai" | "anthropic" | "openrouter" | "minimax" | "ollama" | "custom";
+export type AIProviderId = "openrouter" | "nvidia" | "openai" | "anthropic" | "minimax" | "ollama" | "custom";
 export type AIFormat = "openai" | "anthropic";
 
 export interface AIProviderDef {
@@ -31,6 +31,14 @@ export const AI_PROVIDERS: Record<AIProviderId, AIProviderDef> = {
     baseUrl: "https://openrouter.ai/api/v1",
     defaultModel: "openai/gpt-4o-mini",
     hint: "One key, hundreds of models. Get a key at openrouter.ai/keys.",
+  },
+  nvidia: {
+    id: "nvidia",
+    label: "NVIDIA NIM",
+    format: "openai",
+    baseUrl: "https://integrate.api.nvidia.com/v1",
+    defaultModel: "meta/llama-3.3-70b-instruct",
+    hint: "Free endpoints — get a key (starts with nvapi-) at build.nvidia.com. Browse models there and paste the model id.",
   },
   openai: {
     id: "openai",
@@ -76,7 +84,7 @@ export const AI_PROVIDERS: Record<AIProviderId, AIProviderDef> = {
 };
 
 export const AI_PROVIDER_ORDER: AIProviderId[] = [
-  "openrouter", "openai", "anthropic", "minimax", "ollama", "custom",
+  "openrouter", "nvidia", "openai", "anthropic", "minimax", "ollama", "custom",
 ];
 
 export interface AIChatMessage {

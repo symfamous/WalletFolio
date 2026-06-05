@@ -18,6 +18,27 @@ function trimBase(url: string): string {
   return url.replace(/\/+$/, "");
 }
 
+const RETRYABLE = new Set([429, 500, 502, 503, 504]);
+
+/** POST with up to 2 retries on transient provider errors (rate limits / 5xx). */
+async function fetchWithRetry(url: string, init: RequestInit, attempts = 3): Promise<Response> {
+  let last: Response | null = null;
+  for (let i = 0; i < attempts; i++) {
+    const res = await fetch(url, init);
+    if (res.ok || !RETRYABLE.has(res.status)) return res;
+    last = res;
+    if (i < attempts - 1) await new Promise((r) => setTimeout(r, 700 * (i + 1)));
+  }
+  return last as Response;
+}
+
+function friendlyError(label: string, status: number, providerMsg?: string): string {
+  if (status === 429) {
+    return `${label} is rate-limited (common on free models). Wait a few seconds and retry, or switch model in settings.`;
+  }
+  return providerMsg || `${label} error (HTTP ${status}).`;
+}
+
 export async function POST(req: NextRequest) {
   let body: AIChatRequest;
   try {
@@ -44,7 +65,7 @@ export async function POST(req: NextRequest) {
 
   try {
     if (def.format === "anthropic") {
-      const res = await fetch(`${baseUrl}/v1/messages`, {
+      const res = await fetchWithRetry(`${baseUrl}/v1/messages`, {
         method: "POST",
         signal: controller.signal,
         headers: {
@@ -61,7 +82,7 @@ export async function POST(req: NextRequest) {
       });
       const json = await res.json().catch(() => null) as { content?: Array<{ text?: string }>; error?: { message?: string } } | null;
       if (!res.ok) {
-        return NextResponse.json({ error: json?.error?.message ?? `${def.label} error (HTTP ${res.status}).` }, { status: 502 });
+        return NextResponse.json({ error: friendlyError(def.label, res.status, json?.error?.message) }, { status: 502 });
       }
       const text = (json?.content ?? []).map((c) => c.text ?? "").join("").trim();
       return NextResponse.json({ text: text || "(empty response)" });
@@ -79,7 +100,7 @@ export async function POST(req: NextRequest) {
       ? [{ role: "system", content: body.system }, ...messages]
       : messages;
 
-    const res = await fetch(`${baseUrl}/chat/completions`, {
+    const res = await fetchWithRetry(`${baseUrl}/chat/completions`, {
       method: "POST",
       signal: controller.signal,
       headers,
@@ -89,7 +110,7 @@ export async function POST(req: NextRequest) {
       | { choices?: Array<{ message?: { content?: string } }>; error?: { message?: string } }
       | null;
     if (!res.ok) {
-      return NextResponse.json({ error: json?.error?.message ?? `${def.label} error (HTTP ${res.status}).` }, { status: 502 });
+      return NextResponse.json({ error: friendlyError(def.label, res.status, json?.error?.message) }, { status: 502 });
     }
     const text = (json?.choices?.[0]?.message?.content ?? "").trim();
     return NextResponse.json({ text: text || "(empty response)" });
