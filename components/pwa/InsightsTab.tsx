@@ -833,7 +833,7 @@ export function InsightsTab() {
     walletResults,
   } = usePWAData();
 
-  const [activeFeature, setActiveFeature] = useState<InsightFeature>("buckets");
+  const [activeFeature, setActiveFeature] = useState<InsightFeature>("assistant");
 
   if (!portfolio) {
     return (

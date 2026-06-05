@@ -17,7 +17,8 @@ import { useFxRate } from "@/hooks/useFxRate";
 import { usePerps } from "@/hooks/usePerps";
 import { useSnapshots } from "@/hooks/useSnapshots";
 import { useWallets } from "@/hooks/useWallets";
-import { DashboardHeader, ProviderBanner } from "@/components/dashboard/shared";
+import { DashboardHeader, ProviderBanner, SectionHeader } from "@/components/dashboard/shared";
+import { AIAssistant } from "@/components/intelligence/AIAssistant";
 import {
   DefiView,
   HistoryView,
@@ -136,7 +137,7 @@ export function Dashboard({
   const hasProtocols = (displayPortfolio?.protocols.filter((protocol) => protocol.netUsdValue >= 5 || protocol.totalBorrowUsd > 0).length ?? 0) > 0;
 
   const availableSectionIds = useMemo(() => {
-    const ids = ["overview", "wallets", "intelligence"];
+    const ids = ["overview", "wallets", "intelligence", "assistant"];
     if (visibleSections.detailedHoldings) ids.push("holdings");
     ids.push("pnl");
     if (visibleSections.detailedDefi && hasProtocols) ids.push("defi-positions");
@@ -259,6 +260,15 @@ export function Dashboard({
         hasHistory={snapshots.hasHistory}
         summary={intelligenceSummary}
       />
+    ) :
+    activeSection === "assistant" ? (
+      <div id="assistant" className="space-y-3.5">
+        <SectionHeader
+          title="AI Assistant"
+          subtitle="Ask anything — general questions plus live answers grounded in your wallet."
+        />
+        <AIAssistant portfolio={displayPortfolio} perps={perps.data} intelligence={intelligenceForUi ?? undefined} />
+      </div>
     ) :
     activeSection === "holdings" ? (
       <HoldingsView portfolio={displayPortfolio} address={address} />

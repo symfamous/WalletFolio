@@ -3,6 +3,7 @@
 import Link from "next/link";
 import {
   Activity,
+  Bot,
   BookOpen,
   Briefcase,
   Compass,
@@ -40,6 +41,7 @@ const NAV_ITEMS: SidebarNavItem[] = [
   { id: "overview", label: "Overview", icon: Compass },
   { id: "wallets", label: "Wallets", icon: Wallet },
   { id: "intelligence", label: "Intelligence", icon: Sparkles },
+  { id: "assistant", label: "AI Assistant", icon: Bot },
   { id: "holdings", label: "Holdings", icon: Briefcase },
   { id: "pnl", label: "P&L", icon: LineChart },
   { id: "defi-positions", label: "DeFi", icon: Layers },

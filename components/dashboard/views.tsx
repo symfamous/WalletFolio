@@ -12,7 +12,6 @@ import { HiddenFundsScanner } from "@/components/intelligence/HiddenFundsScanner
 import { HoldingsTable } from "@/components/portfolio/HoldingsTable";
 import { KnowledgeVault } from "@/components/intelligence/KnowledgeVault";
 import { ActivityScore } from "@/components/intelligence/ActivityScore";
-import { AIAssistant } from "@/components/intelligence/AIAssistant";
 import { PushAlertsToggle } from "@/components/intelligence/PushAlertsToggle";
 import { NftHoldings } from "@/components/portfolio/NftHoldings";
 import { PerpPositions } from "@/components/portfolio/PerpPositions";
@@ -338,17 +337,14 @@ export function IntelligenceView({
   hasHistory: boolean;
   summary: string;
 }) {
-  const [workspaceTab, setWorkspaceTab] = useState<"analysis" | "assistant" | "vault" | "safety">("analysis");
+  const [workspaceTab, setWorkspaceTab] = useState<"analysis" | "vault" | "safety">("analysis");
   const workspaceTitle = workspaceTab === "analysis" ? "Analysis Workspace"
-    : workspaceTab === "assistant" ? "AI Assistant"
     : workspaceTab === "vault" ? "Wallet Vault" : "Wallet Safety Scanner";
   const workspaceSummary = workspaceTab === "analysis"
     ? summary
-    : workspaceTab === "assistant"
-      ? "Ask anything about your wallet — answers are grounded in your live holdings."
-      : workspaceTab === "vault"
-        ? "Connected notes for holdings, protocols, networks, trades, and transactions."
-        : "Review approval transactions and wallet activity signals requiring attention.";
+    : workspaceTab === "vault"
+      ? "Connected notes for holdings, protocols, networks, trades, and transactions."
+      : "Review approval transactions and wallet activity signals requiring attention.";
 
   return (
     <div id="intelligence" className="space-y-3.5">
@@ -384,7 +380,7 @@ export function IntelligenceView({
         summary={workspaceSummary}
         action={
           <div className="flex rounded-full border border-border bg-surface-raised p-1">
-            {(["analysis", "assistant", "vault", "safety"] as const).map((tab) => (
+            {(["analysis", "vault", "safety"] as const).map((tab) => (
               <button
                 key={tab}
                 type="button"
@@ -400,9 +396,7 @@ export function IntelligenceView({
           </div>
         }
       >
-        {workspaceTab === "assistant" ? (
-          <AIAssistant portfolio={portfolio} perps={perpsData} intelligence={intelligence ?? undefined} />
-        ) : workspaceTab === "vault" ? (
+        {workspaceTab === "vault" ? (
           <KnowledgeVault address={address} portfolio={portfolio} perps={perpsData} />
         ) : workspaceTab === "safety" ? (
           <div className="space-y-4">
