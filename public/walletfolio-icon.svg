@@ -1,0 +1,75 @@
+<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 512 512" width="512" height="512">
+  <defs>
+    <linearGradient id="bgGrad" x1="0" y1="0" x2="512" y2="512" gradientUnits="userSpaceOnUse">
+      <stop offset="0%" stop-color="#0a100d"/>
+      <stop offset="50%" stop-color="#0f1712"/>
+      <stop offset="100%" stop-color="#1d2c22"/>
+    </linearGradient>
+    <linearGradient id="textGrad" x1="256" y1="365" x2="256" y2="420" gradientUnits="userSpaceOnUse">
+      <stop offset="0%" stop-color="#ffffff"/>
+      <stop offset="50%" stop-color="#00d4ff"/>
+      <stop offset="100%" stop-color="#002d39"/>
+    </linearGradient>
+    <radialGradient id="glowGrad" cx="0.3" cy="0.3" r="0.5">
+      <stop offset="0%" stop-color="#00e676" stop-opacity="0.1"/>
+      <stop offset="100%" stop-color="transparent"/>
+    </radialGradient>
+    <filter id="ringGlow" x="-50%" y="-50%" width="200%" height="200%">
+      <feGaussianBlur stdDeviation="6" result="blur"/>
+      <feMerge><feMergeNode in="blur"/><feMergeNode in="SourceGraphic"/></feMerge>
+    </filter>
+    <filter id="btcGlow" x="-50%" y="-50%" width="200%" height="200%">
+      <feGaussianBlur stdDeviation="12" result="blur"/>
+      <feMerge><feMergeNode in="blur"/><feMergeNode in="SourceGraphic"/></feMerge>
+    </filter>
+    <filter id="nodeGlow" x="-50%" y="-50%" width="200%" height="200%">
+      <feGaussianBlur stdDeviation="3" result="blur"/>
+      <feMerge><feMergeNode in="blur"/><feMergeNode in="SourceGraphic"/></feMerge>
+    </filter>
+  </defs>
+
+  <!-- Full solid background — no clip path, OS applies its own mask -->
+  <rect width="512" height="512" fill="#0f1712"/>
+  <rect width="512" height="512" fill="url(#bgGrad)"/>
+  <rect width="512" height="512" fill="url(#glowGrad)"/>
+
+  <!-- Orbital Ring -->
+  <circle cx="256" cy="205" r="120" fill="none" stroke="#00d4ff" stroke-opacity="0.4" stroke-width="1.5" filter="url(#ringGlow)"/>
+
+  <!-- Orbital Node: Top (Bitcoin ₿) -->
+  <circle cx="256" cy="85" r="18" fill="#0c1410" stroke="#384d40" stroke-width="1" filter="url(#nodeGlow)"/>
+  <text x="256" y="91" text-anchor="middle" font-size="16" font-weight="bold" fill="#00d4ff" font-family="sans-serif">₿</text>
+
+  <!-- Orbital Node: Top-Right (Token) -->
+  <circle cx="360" cy="145" r="18" fill="#0c1410" stroke="#384d40" stroke-width="1" filter="url(#nodeGlow)"/>
+  <text x="360" y="151" text-anchor="middle" font-size="13" font-weight="bold" fill="#00d4ff" font-family="sans-serif">◇</text>
+
+  <!-- Orbital Node: Bottom-Right (Diamond) -->
+  <circle cx="360" cy="265" r="18" fill="#0c1410" stroke="#384d40" stroke-width="1" filter="url(#nodeGlow)"/>
+  <text x="360" y="271" text-anchor="middle" font-size="13" font-weight="bold" fill="#00d4ff" font-family="sans-serif">◆</text>
+
+  <!-- Orbital Node: Bottom (USD $) -->
+  <circle cx="256" cy="325" r="18" fill="#0c1410" stroke="#384d40" stroke-width="1" filter="url(#nodeGlow)"/>
+  <text x="256" y="331" text-anchor="middle" font-size="14" font-weight="bold" fill="#00d4ff" font-family="sans-serif">$</text>
+
+  <!-- Orbital Node: Bottom-Left (Toll) -->
+  <circle cx="152" cy="265" r="18" fill="#0c1410" stroke="#384d40" stroke-width="1" filter="url(#nodeGlow)"/>
+  <text x="152" y="271" text-anchor="middle" font-size="13" font-weight="bold" fill="#00d4ff" font-family="sans-serif">◎</text>
+
+  <!-- Orbital Node: Top-Left (Savings) -->
+  <circle cx="152" cy="145" r="18" fill="#0c1410" stroke="#384d40" stroke-width="1" filter="url(#nodeGlow)"/>
+  <text x="152" y="151" text-anchor="middle" font-size="13" font-weight="bold" fill="#00d4ff" font-family="sans-serif">⬡</text>
+
+  <!-- Center BTC Background -->
+  <circle cx="256" cy="205" r="52" fill="#00d4ff" fill-opacity="0.08" filter="url(#btcGlow)"/>
+  <!-- Center BTC Icon -->
+  <g transform="translate(220,169) scale(2.8)">
+    <path d="M23.638 14.904c-1.602 6.43-8.113 10.34-14.542 8.736C2.67 22.05-1.244 15.556.362 9.103 1.962 2.67 8.474-1.24 14.904.364c6.428 1.592 10.342 8.107 8.734 14.54zm-6.715-6.42c.252-1.682-1.03-2.58-2.785-3.185l.57-2.28-1.385-.345-.553 2.217c-.365-.09-.74-.175-1.11-.26l.56-2.242-1.385-.346-.57 2.28c-.3-.07-.597-.138-.883-.213l.002-.01-1.91-.476-.37 1.48s1.028.235 1.006.25c.56.14.66.512.643.807l-.645 2.585c.038.01.088.024.143.046l-.143-.036-1.047 4.195c-.068.17-.245.426-.642.327.014.02-1.006-.25-1.006-.25l-.69 1.59 1.8.45c.334.085.663.175.986.26l-.58 2.33 1.385.346.57-2.28c.378.102.744.197 1.102.285l-.564 2.26 1.385.346.58-2.325c2.363.447 4.14.267 4.887-1.87.603-1.724-.03-2.72-1.274-3.37.905-.208 1.585-.8 1.766-2.023zm-3.155 4.417c-.427 1.72-3.324.79-4.264.556l.76-3.05c.94.235 3.93.664 3.504 2.494zm.428-4.44c-.39 1.562-2.805.77-3.587.574l.69-2.765c.78.196 3.287.563 2.897 2.19z" fill="#00d4ff"/>
+  </g>
+
+  <!-- walletfolio text -->
+  <text x="256" y="400" text-anchor="middle" font-size="48" font-weight="bold" font-family="Space Grotesk, system-ui, sans-serif" letter-spacing="-1" fill="url(#textGrad)">walletfolio</text>
+
+  <!-- Underline -->
+  <line x1="146" y1="414" x2="366" y2="414" stroke="#00d4ff" stroke-opacity="0.5" stroke-width="1"/>
+</svg>

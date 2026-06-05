@@ -1,0 +1,26 @@
+node_modules
+.next
+# Secrets — never commit any env files or key material
+.env
+.env.*
+!.env.example
+*.pem
+*.key
+*.p8
+*.keystore
+secrets.*
+**/serviceAccount*.json
+*.log
+dist
+build
+.vercel
+# Windows download artifacts & backups
+*Zone.Identifier
+*.bak
+*:mshield
+# Local tooling / generated (not for the public repo)
+.claude/
+.codex
+CLAUDE.md
+graphify-out/
+tsconfig.tsbuildinfo

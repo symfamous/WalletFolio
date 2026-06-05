@@ -1,0 +1,40 @@
+name: CI
+
+on:
+  push:
+    branches: [main]
+  pull_request:
+  workflow_dispatch:
+
+jobs:
+  build:
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+      - uses: actions/setup-node@v4
+        with:
+          node-version: 20
+          cache: npm
+      - run: npm ci
+      - name: Type check
+        run: npm run type-check
+      - name: Build
+        run: npm run build
+        env:
+          # Build must succeed without real secrets (API routes read env at request time).
+          NEXT_TELEMETRY_DISABLED: "1"
+          # next build skips ESLint when unconfigured; keep it non-fatal regardless.
+          NEXT_DISABLE_ESLINT: "1"
+
+  audit:
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+      - uses: actions/setup-node@v4
+        with:
+          node-version: 20
+          cache: npm
+      - run: npm ci
+      - name: npm audit (high+)
+        run: npm audit --audit-level=high
+        continue-on-error: true # informational — flags vulns without blocking merges
