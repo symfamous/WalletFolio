@@ -19,10 +19,18 @@ function px(n: number): string {
  * wallet. The wallet facts are the source of truth for the user's holdings; the
  * model is otherwise free to be a normal, helpful crypto assistant.
  */
+// Majors to surface live prices for (when present in the Hyperliquid feed).
+const LIVE_MAJORS = [
+  "BTC", "ETH", "SOL", "BNB", "XRP", "DOGE", "ADA", "AVAX", "LINK", "TRX",
+  "DOT", "LTC", "BCH", "NEAR", "APT", "ARB", "OP", "SUI", "SEI", "TIA",
+  "INJ", "HYPE", "TON", "ATOM", "UNI", "AAVE", "LDO", "WLD", "PEPE", "kPEPE",
+];
+
 export function buildPortfolioContext(
   portfolio: Portfolio,
   perps?: PerpsApiResponse | null,
-  intelligence?: PortfolioIntelligence | null
+  intelligence?: PortfolioIntelligence | null,
+  liveMids?: Record<string, number>
 ): string {
   const s = portfolio.summary;
   const lines: string[] = [];
@@ -32,7 +40,7 @@ export function buildPortfolioContext(
     "You ALSO have the user's live wallet snapshot below. Use it only when the question is about THEIR portfolio, holdings, risk, or positions. For everything else, just answer the question directly — don't force it back to their wallet or mention their holdings unless relevant."
   );
   lines.push(
-    "For \"should I buy/sell/hold\" questions about their assets, give balanced considerations and risks for their actual position, then add a short reminder that it's educational, not personalized financial advice. When you reference their holdings, prefer the real numbers below. You don't have live market prices for assets they don't hold — if asked, say so briefly and still give useful context. Be concise and well-formatted."
+    "For \"should I buy/sell/hold\" questions about their assets, give balanced considerations and risks for their actual position, then add a short reminder that it's educational, not personalized financial advice. When you reference their holdings, prefer the real numbers below. You DO have real-time prices for major coins (see LIVE MARKET PRICES) — use them for current-price questions; for obscure coins not listed there, say you don't have a live quote and still give context. Be concise and well-formatted."
   );
   lines.push("");
   lines.push("=== USER'S WALLET (context — use only when the question is about their portfolio) ===");
@@ -75,6 +83,17 @@ export function buildPortfolioContext(
   if (intelligence?.risk) {
     lines.push("");
     lines.push(`Risk: overall ${intelligence.risk.overallState}. ${intelligence.risk.topReason ?? ""}`.trim());
+  }
+
+  if (liveMids && Object.keys(liveMids).length > 0) {
+    const quotes = LIVE_MAJORS
+      .filter((sym) => typeof liveMids[sym] === "number" && liveMids[sym] > 0)
+      .map((sym) => `${sym.replace(/^k/, "")} ${px(liveMids[sym])}`);
+    if (quotes.length > 0) {
+      lines.push("");
+      lines.push("=== LIVE MARKET PRICES (Hyperliquid, real-time USD — use these for any current-price question) ===");
+      lines.push(quotes.join("; "));
+    }
   }
 
   return lines.join("\n");

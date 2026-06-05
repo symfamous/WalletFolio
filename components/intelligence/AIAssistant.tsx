@@ -1,12 +1,13 @@
 "use client";
 
-import { useEffect, useMemo, useRef, useState } from "react";
+import { useEffect, useRef, useState } from "react";
 import { Bot, Loader2, Send, Settings2, Sparkles } from "lucide-react";
 import { cn } from "@/lib/utils";
 import { Card } from "@/components/ui/Card";
 import { AI_PROVIDERS, AI_PROVIDER_ORDER, type AIChatMessage, type AIProviderId } from "@/lib/ai/providers";
 import { defaultConfigFor, isConfigured, loadAIConfig, saveAIConfig, type AIConfig } from "@/lib/ai/config";
 import { buildPortfolioContext } from "@/lib/ai/context";
+import { useLiveMids } from "@/hooks/useLiveMids";
 import type { PerpsApiResponse, Portfolio, PortfolioIntelligence } from "@/types";
 
 const SUGGESTIONS = [
@@ -44,10 +45,12 @@ export function AIAssistant({
   }, [messages, busy]);
 
   const ready = isConfigured(config);
-  const system = useMemo(
-    () => buildPortfolioContext(portfolio, perps, intelligence),
-    [portfolio, perps, intelligence]
-  );
+
+  // Live Hyperliquid mids for real-time major-coin prices. Kept in a ref so the
+  // ~1/sec updates don't rebuild the prompt or re-run send on every tick.
+  const { mids } = useLiveMids();
+  const midsRef = useRef(mids);
+  midsRef.current = mids;
 
   function changeProvider(id: AIProviderId) {
     setConfig((prev) => ({ ...defaultConfigFor(id), apiKey: prev.provider === id ? prev.apiKey : "" }));
@@ -69,6 +72,8 @@ export function AIAssistant({
     setInput("");
     setBusy(true);
     setError(null);
+
+    const system = buildPortfolioContext(portfolio, perps, intelligence, midsRef.current);
 
     try {
       const res = await fetch("/api/ai/chat", {
