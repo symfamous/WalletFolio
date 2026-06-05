@@ -81,7 +81,11 @@ export function normalizeHyperliquidSpot(
       balance:         bal.total,
       rawBalance:      String(Math.round(bal.total * Math.pow(10, decimals))),
       price:           price,
-      priceChange24h:  isCoreHyperliquidAsset ? bal.priceChange24h : undefined,
+      // The Hyperliquid spot feed's 24h change is unreliable (it has reported e.g.
+      // +0.12% for HYPE on a day it actually moved ~-17%). Leave it undefined so the
+      // canonical price-source change (Zerion/DefiLlama) for the same asset is used
+      // instead of polluting gainers/losers and the holdings 24h column.
+      priceChange24h:  undefined,
       priceAvailable:  price > 0,
       usdValue,
       source:          "wallet",

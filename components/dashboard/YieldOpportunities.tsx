@@ -33,14 +33,21 @@ export function YieldOpportunities({ portfolio, address }: { portfolio: Portfoli
 
   const rows: Row[] = useMemo(() => {
     if (!data) return [];
-    const out: Row[] = [];
+    // Combine holdings that share a symbol (e.g. USDC across chains) into one row so
+    // each symbol appears once and its full deployable balance is summed.
+    const bySymbol = new Map<string, Row>();
     for (const h of held) {
-      const pools = data.bySymbol[h.symbol.toUpperCase()];
-      if (pools && pools.length > 0) {
-        out.push({ symbol: h.symbol, logo: h.logo, heldUsd: h.totalUsdValue, best: pools[0] });
+      const key = h.symbol.toUpperCase();
+      const pools = data.bySymbol[key];
+      if (!pools || pools.length === 0) continue;
+      const existing = bySymbol.get(key);
+      if (existing) {
+        existing.heldUsd += h.totalUsdValue;
+      } else {
+        bySymbol.set(key, { symbol: h.symbol, logo: h.logo, heldUsd: h.totalUsdValue, best: pools[0] });
       }
     }
-    return out.sort((a, b) => b.best.apy - a.best.apy);
+    return [...bySymbol.values()].sort((a, b) => b.best.apy - a.best.apy);
   }, [data, held]);
 
   return (
@@ -63,7 +70,7 @@ export function YieldOpportunities({ portfolio, address }: { portfolio: Portfoli
             const annual = r.heldUsd * (r.best.apy / 100);
             return (
               <a
-                key={r.symbol}
+                key={r.symbol.toUpperCase()}
                 href={r.best.url}
                 target="_blank"
                 rel="noopener noreferrer"

@@ -303,6 +303,7 @@ export function Dashboard({
     ) :
     activeSection === "settings" ? (
       <SettingsView
+        address={address}
         hasPriced={hasPriced}
         portfolio={displayPortfolio}
         format={format}

@@ -7,6 +7,7 @@ export interface TrendingCoin {
   name: string;
   thumb: string;
   rank: number | null;
+  price: number | null;
   change24h: number | null;
 }
 

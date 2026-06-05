@@ -327,7 +327,8 @@ export async function fetchZerionPositions(
   apiKey: string,
   maxPages = 10,
   positionFilter: "only_complex" | "only_simple" | "no_filter" = "only_complex",
-  totalBudgetMs = ZERION_TOTAL_BUDGET_MS
+  totalBudgetMs = ZERION_TOTAL_BUDGET_MS,
+  fallbackApiKey?: string
 ): Promise<ZerionPosition[]> {
   const cacheKey = positionsCacheKey(address, maxPages, positionFilter);
   const inflight = zerionPositionsInflight.get(cacheKey);
@@ -336,56 +337,77 @@ export async function fetchZerionPositions(
     return inflight;
   }
 
-  const request = (async () => {
+  // Paginate through all positions using a single API key. Caches on success.
+  const runWithKey = async (key: string, keyLabel: string): Promise<ZerionPosition[]> => {
     const all: ZerionPosition[] = [];
     let cursor: string | undefined;
     let page = 0;
     const startedAt = Date.now();
 
+    do {
+      if (Date.now() - startedAt >= totalBudgetMs) {
+        console.warn(`[zerion] position budget ${totalBudgetMs} ms exhausted after ${page} pages; returning partial data`);
+        break;
+      }
+      const { data, next } = await fetchPositionsPage(address, key, cursor, positionFilter);
+      all.push(...data);
+      cursor = next;
+      page += 1;
+    } while (cursor && page < maxPages);
+
+    if (cursor && page >= maxPages) {
+      console.warn(`[zerion] Position pagination capped at ${maxPages} pages for ${address}`);
+    }
+
+    const totalDurationMs = Date.now() - startedAt;
+    console.info(`[zerion] positions complete for ${address} (${keyLabel} key): pages=${page} count=${all.length} duration=${totalDurationMs} ms`);
+    if (all.length === 0) {
+      console.warn(`[zerion] positions complete but empty for ${address} after ${totalDurationMs} ms`);
+    } else {
+      zerionPositionsCache.set(cacheKey, {
+        positions: all,
+        cachedAt: Date.now(),
+        expiresAt: Date.now() + ZERION_CACHE_TTL_MS,
+      });
+    }
+
+    return all;
+  };
+
+  const request = (async () => {
     try {
-      do {
-        if (Date.now() - startedAt >= totalBudgetMs) {
-          console.warn(`[zerion] position budget ${totalBudgetMs} ms exhausted after ${page} pages; returning partial data`);
-          break;
-        }
-        const { data, next } = await fetchPositionsPage(address, apiKey, cursor, positionFilter);
-        all.push(...data);
-        cursor = next;
-        page += 1;
-      } while (cursor && page < maxPages);
-
-      if (cursor && page >= maxPages) {
-        console.warn(
-          `[zerion] Position pagination capped at ${maxPages} pages for ${address}`
-        );
-      }
-
-      const totalDurationMs = Date.now() - startedAt;
-      console.info(`[zerion] positions complete for ${address}: pages=${page} count=${all.length} duration=${totalDurationMs} ms`);
-      if (all.length === 0) {
-        console.warn(`[zerion] positions complete but empty for ${address} after ${totalDurationMs} ms`);
-      } else {
-        zerionPositionsCache.set(cacheKey, {
-          positions: all,
-          cachedAt: Date.now(),
-          expiresAt: Date.now() + ZERION_CACHE_TTL_MS,
-        });
-      }
-
-      return all;
+      return await runWithKey(apiKey, "primary");
     } catch (error) {
       if (error instanceof ProviderRequestError && error.reason === "rate_limit") {
-        const cached = getCachedZerionPositions(cacheKey);
         console.warn(
           `[zerion] positions rate limited for ${address}${error.retryAfterMs !== undefined ? ` (Retry-After ${error.retryAfterMs} ms)` : ""}`
         );
+
+        // 1) A fresh cached copy is the cheapest recovery.
+        const cached = getCachedZerionPositions(cacheKey);
         if (cached) {
           console.info(
             `[zerion] serving cached positions for ${address} (${cached.positions.length} items, age ${Date.now() - cached.cachedAt} ms)`
           );
           return cached.positions;
         }
-        console.warn(`[zerion] no cached positions available for ${address} after rate limit`);
+
+        // 2) Otherwise fall back to the secondary Zerion key, if one is configured.
+        if (fallbackApiKey && fallbackApiKey.trim() && fallbackApiKey !== apiKey) {
+          console.warn(`[zerion] primary key rate limited; retrying ${address} with fallback key`);
+          try {
+            return await runWithKey(fallbackApiKey, "fallback");
+          } catch (fallbackError) {
+            if (fallbackError instanceof ProviderRequestError && fallbackError.reason === "rate_limit") {
+              console.warn(`[zerion] fallback key also rate limited for ${address}`);
+            } else {
+              console.warn(`[zerion] fallback key request failed for ${address}:`, fallbackError);
+            }
+            throw fallbackError;
+          }
+        }
+
+        console.warn(`[zerion] no cached positions and no usable fallback key for ${address} after rate limit`);
       }
       throw error;
     } finally {

@@ -1,16 +1,13 @@
 "use client";
 
-import { useState } from "react";
 import { DebtToPaidTracker } from "@/components/intelligence/DebtToPaidTracker";
 import { FxBar } from "@/components/common/FxBar";
 import { TargetPriceCalculator } from "@/components/intelligence/TargetPriceCalculator";
 import { ApprovalsScanner } from "@/components/intelligence/ApprovalsScanner";
-import { PnlView } from "@/components/dashboard/views";
-import { ShareCardModal } from "@/components/shell/ShareCardModal";
 import { usePWAData } from "@/components/pwa/PWAContext";
 import { TabHero } from "@/components/pwa/TabHero";
 import { Card } from "@/components/ui/Card";
-import { Calculator, CircleDollarSign, Share2 } from "lucide-react";
+import { Calculator, CircleDollarSign } from "lucide-react";
 
 export function ToolsTab() {
   const {
@@ -24,12 +21,6 @@ export function ToolsTab() {
   } = usePWAData();
 
   const hasPricedHoldings = portfolio?.aggregated.some((holding) => holding.priceAvailable) ?? false;
-  const [shareOpen, setShareOpen] = useState(false);
-  const topAssets = (portfolio?.aggregated ?? [])
-    .filter((h) => h.priceAvailable && h.totalUsdValue > 0)
-    .sort((a, b) => b.totalUsdValue - a.totalUsdValue)
-    .slice(0, 6)
-    .map((h) => h.symbol);
 
   return (
     <div className="space-y-5 px-4 pt-0 pb-24">
@@ -76,37 +67,6 @@ export function ToolsTab() {
       ) : null}
 
       <ApprovalsScanner address={address} />
-
-      {portfolio ? <PnlView address={address} portfolio={portfolio} /> : null}
-
-      {portfolio ? (
-        <Card>
-          <div className="flex items-center justify-between gap-3">
-            <div>
-              <h2 className="text-sm font-semibold text-text-hi">Share your portfolio</h2>
-              <p className="mt-0.5 text-xs text-text-lo">Generate a card to save or post.</p>
-            </div>
-            <button
-              type="button"
-              onClick={() => setShareOpen(true)}
-              className="inline-flex items-center gap-1.5 rounded-[10px] bg-accent px-3 py-2 text-sm font-medium text-white transition-colors hover:bg-accent-hover"
-            >
-              <Share2 className="h-4 w-4" /> Share
-            </button>
-          </div>
-        </Card>
-      ) : null}
-
-      {portfolio ? (
-        <ShareCardModal
-          open={shareOpen}
-          onClose={() => setShareOpen(false)}
-          name={`${address.slice(0, 6)}…${address.slice(-4)}`}
-          totalUsd={portfolio.summary.totalUsdValue}
-          change24h={portfolio.summary.change24h}
-          topAssets={topAssets}
-        />
-      ) : null}
     </div>
   );
 }

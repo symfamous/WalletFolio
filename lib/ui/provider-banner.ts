@@ -26,11 +26,7 @@ export function getProviderBannerState(
   }
 
   if (status.fallbackUsed && status.fallbackSource && options?.hasRenderablePortfolio) {
-    const sourceLabel = status.fallbackSource === "zapper"
-      ? "Zapper"
-      : status.fallbackSource === "moralis"
-        ? "Moralis"
-        : "Covalent";
+    const sourceLabel = status.fallbackSource === "zapper" ? "Zapper" : "Moralis";
 
     if (status.fallbackCoverage === "good") {
       return {

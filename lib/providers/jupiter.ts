@@ -11,7 +11,7 @@
  *   Marinade, Jito, Raydium, Orca, Francium, Solend, Marginfi, Drift, etc.
  *
  * This is the PRIMARY source for Solana DeFi — much better coverage than
- * Helius (which only returns wallet tokens) or BitQuery (inconsistent).
+ * Helius (which only returns wallet tokens).
  */
 
 const JUPITER_PORTFOLIO_API = "https://api.jup.ag/portfolio/v1";

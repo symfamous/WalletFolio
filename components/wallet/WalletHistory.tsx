@@ -86,6 +86,14 @@ function formatCompactUsd(value?: number): string | null {
   return `$${value.toFixed(2)}`;
 }
 
+/** Gas/network fee — shows sub-cent fees with more precision. */
+function formatFeeUsd(value?: number): string | null {
+  if (value === undefined || value <= 0) return null;
+  if (value < 0.01) return `<$0.01`;
+  if (value < 1) return `$${value.toFixed(3)}`;
+  return `$${value.toFixed(2)}`;
+}
+
 // ─── Drag-scroll chip row ─────────────────────────────────────────
 
 function ChipRow<T extends { slug: string; label: string }>({
@@ -226,6 +234,11 @@ function ExplainedHistoryRow({ activity }: { activity: ExplainedActivity }) {
               </span>
               {activity.protocol ? <span className="rounded border border-accent/20 bg-accent/10 px-1.5 py-0.5 text-accent">{activity.protocol}</span> : null}
               {timeStr ? <span>{timeStr}</span> : null}
+              {formatFeeUsd(activity.rawEvent.fee) ? (
+                <span className="num rounded border border-border px-1.5 py-0.5 text-text-lo">
+                  ⛽ {formatFeeUsd(activity.rawEvent.fee)} fee
+                </span>
+              ) : null}
             </div>
 
             {activity.riskReason ? (
@@ -249,6 +262,12 @@ function ExplainedHistoryRow({ activity }: { activity: ExplainedActivity }) {
           <p className="text-text-mid">{activity.plainEnglish}</p>
           {activity.bucketImpact ? <p className="mt-2 text-text-lo">Bucket effect: {activity.bucketImpact}</p> : null}
           {activity.beginnerNote ? <p className="mt-2 text-text-lo">Beginner note: {activity.beginnerNote}</p> : null}
+          {formatFeeUsd(activity.rawEvent.fee) ? (
+            <div className="mt-2 flex items-center justify-between gap-3">
+              <span className="text-text-lo">Network fee (est.)</span>
+              <span className="num text-text-mid">{formatFeeUsd(activity.rawEvent.fee)}</span>
+            </div>
+          ) : null}
           <div className="mt-3 flex items-center justify-between gap-3 text-[10px] text-text-lo">
             <span>{getRiskImpactLabel(activity.riskImpact)}</span>
             {activity.usdValue !== undefined ? <span className="num text-text-mid">{formatCompactUsd(activity.usdValue)}</span> : null}

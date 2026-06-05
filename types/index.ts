@@ -150,7 +150,7 @@ export interface NormalizedPosition {
   isSpam: boolean;
   isVerified: boolean;
 
-  dataSource: "zerion" | "bitquery" | "projectx" | "covalent" | "zapper" | "moralis" | "hyperliquid" | "helius" | "jupiter" | "mobula";
+  dataSource: "zerion" | "projectx" | "zapper" | "moralis" | "hyperliquid" | "helius" | "jupiter" | "mobula";
 
   protocolId?: string;
   protocolName?: string;
@@ -174,7 +174,7 @@ export interface ProtocolPosition {
   protocolId: string;
   protocolName: string;
   protocolLogo?: string;
-  dataSource: "zerion" | "bitquery" | "projectx" | "covalent" | "zapper" | "moralis" | "hyperliquid" | "helius" | "jupiter" | "mobula";
+  dataSource: "zerion" | "projectx" | "zapper" | "moralis" | "hyperliquid" | "helius" | "jupiter" | "mobula";
 
   chainSlug: string;
   chainName: string;
@@ -907,16 +907,14 @@ export interface PortfolioApiResponse {
     helius?: "ok" | "error" | "skipped";
     hyperliquid?: "ok" | "error" | "skipped";
     morpho?: "ok" | "error" | "skipped" | "partial";
-    covalent?: "ok" | "error" | "skipped";
     zapper?: "ok" | "error" | "skipped";
     moralis?: "ok" | "error" | "skipped";
-    bitquery?: "ok" | "error" | "skipped";
     jupiter?: "ok" | "error" | "skipped";
     mobula?: "ok" | "error" | "skipped";
     solanaRpc?: "ok" | "error" | "skipped";
     projectx?: "ok" | "error" | "skipped";
     fallbackUsed?: boolean;
-    fallbackSource?: "zapper" | "moralis" | "covalent";
+    fallbackSource?: "zapper" | "moralis";
     fallbackReason?:
       | "timeout"
       | "rate_limit"

@@ -8,12 +8,10 @@ import { NextRequest, NextResponse } from "next/server";
 import { fetchZerionPositions } from "@/lib/providers/zerion";
 import { fetchZapperTokens } from "@/lib/providers/zapper";
 import { fetchMoralisTokens } from "@/lib/providers/moralis";
-import { fetchCovalentDefiPositions } from "@/lib/providers/covalent";
 import { fetchHyperliquidSpot } from "@/lib/providers/perps/hyperliquid";
 import { normalizeZerionPositions } from "@/lib/normalize/positions";
 import { normalizeZapperTokens } from "@/lib/normalize/zapper";
 import { normalizeMoralisTokens } from "@/lib/normalize/moralis";
-import { normalizeCovalentData } from "@/lib/normalize/covalent";
 import { normalizeHyperliquidPerpEquity, normalizeHyperliquidSpot } from "@/lib/normalize/hyperliquid";
 import { buildProtocolPositions } from "@/lib/normalize/protocols";
 import { buildPortfolio } from "@/lib/aggregate/portfolio";
@@ -81,9 +79,9 @@ export async function GET(
   { params }: { params: Promise<{ address: string }> }
 ) {
   const ZERION_API_KEY = process.env.ZERION_API_KEY ?? "";
+  const ZERION_API_KEY_FALLBACK = process.env.ZERION_API_KEY_FALLBACK ?? "";
   const ZAPPER_API_KEY = process.env.ZAPPER_API_KEY ?? "";
   const MORALIS_API_KEY = process.env.MORALIS_API_KEY ?? "";
-  const COVALENT_API_KEY = process.env.COVALENT_API_KEY ?? "";
 
   const { address: raw } = await params;
   const address = raw.toLowerCase();
@@ -101,7 +99,6 @@ export async function GET(
   const zerionEnabled = isProviderEnabled("zerion");
   const zapperEnabled = isProviderEnabled("zapper");
   const moralisEnabled = isProviderEnabled("moralis");
-  const covalentEnabled = isProviderEnabled("covalent");
 
   if (zerionEnabled && ZERION_API_KEY) {
     await loadChainRegistry(ZERION_API_KEY).catch(() => {});
@@ -113,12 +110,11 @@ export async function GET(
   let zerionStatus: "ok" | "error" | "partial" | "skipped" = zerionEnabled && ZERION_API_KEY ? "error" : "skipped";
   let zapperStatus: "ok" | "error" | "skipped" = "skipped";
   let moralisStatus: "ok" | "error" | "skipped" = "skipped";
-  let covalentStatus: "ok" | "error" | "skipped" = "skipped";
   let hyperliquidStatus: "ok" | "error" | "skipped" = "skipped";
 
   const [zerionResult, hyperliquidResult] = await Promise.allSettled([
     zerionEnabled && ZERION_API_KEY
-      ? fetchZerionPositions(address, ZERION_API_KEY, 6, "no_filter")
+      ? fetchZerionPositions(address, ZERION_API_KEY, 6, "no_filter", undefined, ZERION_API_KEY_FALLBACK)
       : Promise.resolve(null),
     fetchHyperliquidSpot(address),
   ]);
@@ -126,9 +122,8 @@ export async function GET(
   let zerionPositions: ReturnType<typeof normalizeZerionPositions> = [];
   let zapperPositions: NormalizedPosition[] = [];
   let moralisPositions: NormalizedPosition[] = [];
-  let covalentPositions: NormalizedPosition[] = [];
   let mainPortfolioPositions: NormalizedPosition[] = [];
-  let mainPortfolioSource: "zerion" | "zapper" | "moralis" | "covalent" | "none" = "none";
+  let mainPortfolioSource: "zerion" | "zapper" | "moralis" | "none" = "none";
   let fallbackReason: PortfolioApiResponse["providerStatus"]["fallbackReason"];
   let hyperliquidSpotData: PortfolioApiResponse["hyperliquidSpot"] = undefined;
   let hyperliquidPerpEquity: NormalizedPosition | null = null;
@@ -163,10 +158,9 @@ export async function GET(
     console.info(`[portfolio] selected main portfolio source=zerion positions=${zerionPositions.length}`);
   } else {
     console.info("[portfolio] zerion unavailable or unusable, invoking fallback portfolio providers");
-    const [zapperResult, moralisResult, covalentResult] = await Promise.allSettled([
+    const [zapperResult, moralisResult] = await Promise.allSettled([
       zapperEnabled && ZAPPER_API_KEY ? fetchZapperTokens(address, ZAPPER_API_KEY) : Promise.resolve(null),
       moralisEnabled && MORALIS_API_KEY ? fetchMoralisTokens(address, MORALIS_API_KEY) : Promise.resolve([]),
-      covalentEnabled && COVALENT_API_KEY ? fetchCovalentDefiPositions(address, COVALENT_API_KEY) : Promise.resolve(null),
     ]);
 
     if (zapperResult.status === "fulfilled" && zapperResult.value) {
@@ -187,24 +181,12 @@ export async function GET(
       console.warn(describeProviderError("moralis", moralisResult.reason));
     }
 
-    if (covalentResult.status === "fulfilled" && covalentResult.value) {
-      covalentPositions = normalizeCovalentData(covalentResult.value).positions;
-      covalentStatus = covalentPositions.length > 0 ? "ok" : "skipped";
-      console.info(`[portfolio] covalent usable positions=${covalentPositions.length}`);
-    } else if (covalentResult.status === "rejected") {
-      covalentStatus = classifyRouteStatus(covalentResult.reason);
-      console.warn(describeProviderError("covalent", covalentResult.reason));
-    }
-
     if (zapperPositions.length > 0) {
       mainPortfolioPositions = zapperPositions;
       mainPortfolioSource = "zapper";
     } else if (moralisPositions.length > 0) {
       mainPortfolioPositions = moralisPositions;
       mainPortfolioSource = "moralis";
-    } else if (covalentPositions.length > 0) {
-      mainPortfolioPositions = covalentPositions;
-      mainPortfolioSource = "covalent";
     }
 
     if (mainPortfolioSource !== "none") {
@@ -262,20 +244,19 @@ export async function GET(
     zerion: zerionStatus,
     hyperliquid: hyperliquidStatus,
     morpho: "skipped",
-    covalent: covalentStatus,
     zapper: zapperStatus,
     moralis: moralisStatus,
     projectx: "skipped",
     fallbackUsed: mainPortfolioSource !== "none" && mainPortfolioSource !== "zerion",
     fallbackSource:
-      mainPortfolioSource === "zapper" || mainPortfolioSource === "moralis" || mainPortfolioSource === "covalent"
+      mainPortfolioSource === "zapper" || mainPortfolioSource === "moralis"
         ? mainPortfolioSource
         : undefined,
     fallbackReason,
     fallbackCoverage:
       mainPortfolioSource === "zapper"
         ? "good"
-        : mainPortfolioSource === "moralis" || mainPortfolioSource === "covalent"
+        : mainPortfolioSource === "moralis"
           ? "partial"
           : undefined,
   };
@@ -307,13 +288,13 @@ export async function GET(
 
   if (hasHyperliquidOnlyData) {
     console.warn(
-      `[portfolio] Hyperliquid-only response because no portfolio provider produced usable positions (zerion=${zerionStatus}, zapper=${zapperStatus}, moralis=${moralisStatus}, covalent=${covalentStatus})`
+      `[portfolio] Hyperliquid-only response because no portfolio provider produced usable positions (zerion=${zerionStatus}, zapper=${zapperStatus}, moralis=${moralisStatus})`
     );
   }
 
   if (process.env.NODE_ENV === "development") {
     console.info(
-      `[portfolio] debug sources main=${mainPortfolioSource} zerion=${zerionStatus}/${zerionPositions.length} zapper=${zapperStatus}/${zapperPositions.length} moralis=${moralisStatus}/${moralisPositions.length} covalent=${covalentStatus}/${covalentPositions.length} hyperliquid=${hyperliquidStatus} hyperliquidSpot=${hyperliquidSpotTokens.length} hyperliquidPerp=${hyperliquidPerpEquity ? 1 : 0}`
+      `[portfolio] debug sources main=${mainPortfolioSource} zerion=${zerionStatus}/${zerionPositions.length} zapper=${zapperStatus}/${zapperPositions.length} moralis=${moralisStatus}/${moralisPositions.length} hyperliquid=${hyperliquidStatus} hyperliquidSpot=${hyperliquidSpotTokens.length} hyperliquidPerp=${hyperliquidPerpEquity ? 1 : 0}`
     );
   }
 

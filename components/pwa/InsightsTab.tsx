@@ -21,17 +21,22 @@ import {
   ArrowDownRight,
   Repeat,
   ShieldCheck,
+  Gift,
+  Bot,
 } from "lucide-react";
 import { cn, formatUSD, formatPct } from "@/lib/utils";
 import { usePWAData } from "@/components/pwa/PWAContext";
+import { ActivityScore } from "@/components/intelligence/ActivityScore";
+import { AIAssistant } from "@/components/intelligence/AIAssistant";
 import { useBehaviorInsights } from "@/hooks/useBehaviorInsights";
 import { buildPortfolioBuckets } from "@/lib/portfolioBuckets";
 import { buildAdaptiveScenarioResults } from "@/lib/scenarioSimulator";
 import type { BehaviorInsight, PortfolioBucketId } from "@/types";
 
-type InsightFeature = "buckets" | "risk" | "stress" | "whatif" | "changed" | "pnl" | "behavior";
+type InsightFeature = "buckets" | "risk" | "stress" | "whatif" | "changed" | "pnl" | "behavior" | "airdrop" | "assistant";
 
 const QUICK_ACTIONS: Array<{ id: InsightFeature; label: string; icon: LucideIcon }> = [
+  { id: "assistant", label: "AI Chat", icon: Bot },
   { id: "buckets", label: "Money", icon: Layers },
   { id: "risk",    label: "Risk", icon: Shield },
   { id: "stress",  label: "Stress", icon: ShieldAlert },
@@ -39,6 +44,7 @@ const QUICK_ACTIONS: Array<{ id: InsightFeature; label: string; icon: LucideIcon
   { id: "changed", label: "Changed", icon: TrendingUp },
   { id: "pnl",     label: "Earn/Lose", icon: TrendingDown },
   { id: "behavior", label: "Patterns", icon: Repeat },
+  { id: "airdrop", label: "Airdrop", icon: Gift },
 ];
 
 // ===== CHECKUP =====
@@ -872,6 +878,16 @@ export function InsightsTab() {
         {activeFeature === "stress" && <StressContent summary={stressSummary} />}
         {activeFeature === "whatif" && <WhatIfContent portfolio={portfolio} selectedGoal={selectedGoal} perpsData={perpsData} />}
         {activeFeature === "changed" && <ChangedContent attribution={attribution} portfolio={portfolio} />}
+        {activeFeature === "airdrop" && (
+          <div className="p-3">
+            <ActivityScore address={address} portfolio={portfolio} perps={perpsData} />
+          </div>
+        )}
+        {activeFeature === "assistant" && (
+          <div className="p-3">
+            <AIAssistant portfolio={portfolio} perps={perpsData} intelligence={intelligence ?? undefined} />
+          </div>
+        )}
         {activeFeature === "pnl" && <PnLContent attribution={attribution} portfolio={portfolio} perpsData={perpsData} />}
         {activeFeature === "behavior" && (
           <BehaviorContent

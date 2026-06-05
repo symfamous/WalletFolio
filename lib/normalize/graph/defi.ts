@@ -68,7 +68,7 @@ export function normalizeGraphDefiPositions(
       isStablecoin: isStable(pos.symbol),
       isSpam: false,
       isVerified: true,
-      dataSource: "bitquery",
+      dataSource: "zerion",
       protocolId: pos.protocolId,
       protocolName: pos.protocolName,
     });
@@ -102,7 +102,7 @@ export function normalizeGraphDefiPositions(
       protocolId,
       protocolName: protoPositions[0]?.protocolName ?? protocolId,
       protocolLogo: undefined,
-      dataSource: "bitquery",
+      dataSource: "zerion",
       chainSlug,
       chainName: protoPositions[0]?.chainName ?? chainSlug,
       chainColor: protoPositions[0]?.chainColor ?? "#5a78a0",
