@@ -21,9 +21,12 @@ const DEFAULT_STABLE_SYMBOL = "USDC";
 const DEFAULT_STABLE_NAME = "USD Coin";
 const NON_ZERO_DELTA_USD = 0.01;
 const MIN_PROTOCOL_SCENARIO_USD = 100;
+// Asset-drop scenarios use lower bars so more of the user's holdings are covered.
+const MIN_ASSET_SCENARIO_USD = 20;
+const MIN_ASSET_SHARE_PCT = 1;
 const MIN_LIQUIDITY_SCENARIO_USD = 100;
 const MIN_VOLATILE_SCENARIO_SHARE_PCT = 5;
-const MAX_SCENARIOS = 6;
+const MAX_SCENARIOS = 12;
 
 type InternalScenarioKind =
   | { kind: "close_leverage" }
@@ -345,9 +348,9 @@ function getMeaningfulVolatileHoldings(portfolio: Portfolio): AggregatedHolding[
   const total = portfolio.summary.totalUsdValue;
   return portfolio.aggregated
     .filter((holding) => !holding.isStablecoin)
-    .filter((holding) => holding.totalUsdValue >= MIN_PROTOCOL_SCENARIO_USD)
-    .filter((holding) => total > 0 && (holding.totalUsdValue / total) * 100 >= MIN_VOLATILE_SCENARIO_SHARE_PCT)
-    .slice(0, 3);
+    .filter((holding) => holding.totalUsdValue >= MIN_ASSET_SCENARIO_USD)
+    .filter((holding) => total > 0 && (holding.totalUsdValue / total) * 100 >= MIN_ASSET_SHARE_PCT)
+    .slice(0, 8);
 }
 
 function getTopDefiProtocol(portfolio: Portfolio) {
@@ -470,14 +473,14 @@ function buildAdaptiveScenarioDefinitions(
     ));
   }
 
-  holdings.slice(0, 2).forEach((holding, index) => {
-    const shockPct = index === 0 ? -20 : -15;
+  holdings.slice(0, 6).forEach((holding, index) => {
+    const shockPct = index === 0 ? -20 : index === 1 ? -15 : -10;
     const sharePct = portfolio.summary.totalUsdValue > 0 ? (holding.totalUsdValue / portfolio.summary.totalUsdValue) * 100 : 0;
     const safetyAssetPenalty = ["Mostly Safe", "Balanced", "Learn Slowly"].includes(goal) ? 10 : 0;
     scenarios.push(buildAssetDropScenario(
       holding,
       shockPct,
-      40 + Math.round(sharePct) + goalBias.asset - index * 4 - safetyAssetPenalty
+      40 + Math.round(sharePct) + goalBias.asset - index * 3 - safetyAssetPenalty
     ));
   });
 

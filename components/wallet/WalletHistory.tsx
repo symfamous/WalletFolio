@@ -330,6 +330,10 @@ function HistoryRow({ event }: { event: HistoryEvent }) {
             <span className="text-[10px] text-text-lo">
               {timeStr}
             </span>
+            {/* Gas fee per tx (inline) */}
+            {formatFeeUsd(event.fee) ? (
+              <span className="num text-[10px] text-text-lo">⛽ {formatFeeUsd(event.fee)}</span>
+            ) : null}
           </div>
         </div>
 
@@ -503,19 +507,10 @@ export function WalletHistory({
 }) {
   const [filterType, setFilterType] = useState("all");
   const [showCount, setShowCount] = useState(compact ? 10 : 25);
-  const [viewMode, setViewMode] = useState<"explained" | "raw">(initialViewMode);
-  const [showNoise, setShowNoise] = useState(false);
+  // Raw chain activity only — the beginner "explained" view has been retired.
+  const [viewMode] = useState<"explained" | "raw">("raw");
+  const [showNoise] = useState(false);
   const isSolana = isSolanaAddress(address) && !address.startsWith("0x");
-
-  useEffect(() => {
-    setViewMode(initialViewMode);
-  }, [initialViewMode]);
-
-  useEffect(() => {
-    if (!allowRawToggle && viewMode !== "explained") {
-      setViewMode("explained");
-    }
-  }, [allowRawToggle, viewMode]);
 
   const {
     events,
@@ -653,25 +648,6 @@ export function WalletHistory({
         />
       )}
 
-      {allowRawToggle ? (
-        <ChipRow
-          options={VIEW_OPTIONS}
-          active={viewMode}
-          onSelect={(slug) => {
-            setViewMode(slug as "explained" | "raw");
-            setShowCount(25);
-          }}
-        />
-      ) : null}
-
-      {viewMode === "explained" ? (
-        <p className="text-xs text-text-lo">
-          {compact
-            ? "Simple keeps the most important activity up front."
-            : "Simple mode explains what happened in plain English and hides low-signal setup noise by default."}
-        </p>
-      ) : null}
-
       {/* Type filter */}
       {!compact ? (
         <ChipRow
@@ -682,27 +658,6 @@ export function WalletHistory({
             setShowCount(25);
           }}
         />
-      ) : null}
-
-      {viewMode === "explained" && !compact ? (
-        <div className="flex items-center gap-2 flex-wrap">
-          <button
-            type="button"
-            onClick={() => setShowNoise((value) => !value)}
-            className={cn(
-              "text-xs px-2.5 py-1 rounded-lg border transition-colors",
-              showNoise
-                ? "bg-accent/15 text-accent border-accent/30"
-                : "bg-surface-raised border-border text-text-lo hover:text-text-mid"
-            )}
-          >
-            {showNoise ? "Hide low-signal activity" : "Show low-signal activity"}
-          </button>
-        </div>
-      ) : null}
-
-      {viewMode === "explained" && displayEvents.length > 0 ? (
-        <ActivitySummaryCard summary={summary} />
       ) : null}
 
       {/* Show count */}

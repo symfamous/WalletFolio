@@ -55,16 +55,21 @@ export function LiveTicker({ symbols = [], className }: { symbols?: string[]; cl
 
   if (wanted.length === 0) return null;
 
+  // Duplicate the row so the -50% marquee loops seamlessly.
+  const track = [...wanted, ...wanted];
+
   return (
-    <div className={cn("flex items-center gap-3 overflow-x-auto rounded-[12px] border border-border bg-surface px-3 py-2 shadow-card scrollbar-none", className)}>
-      <span className="flex items-center gap-1.5 whitespace-nowrap">
+    <div className={cn("flex items-center gap-3 overflow-hidden rounded-[12px] border border-border bg-surface px-3 py-2 shadow-card", className)}>
+      <span className="flex shrink-0 items-center gap-1.5 whitespace-nowrap">
         <span className={cn("h-1.5 w-1.5 rounded-full", connected ? "bg-success animate-pulse" : "bg-text-lo")} />
         <span className="text-[10px] uppercase tracking-wide text-text-lo">Live</span>
       </span>
-      <div className="flex items-center gap-3.5">
-        {wanted.map((symbol) => (
-          <TickerItem key={symbol} symbol={symbol} price={mids[symbol]} />
-        ))}
+      <div className="marquee-track relative min-w-0 flex-1 overflow-hidden">
+        <div className="animate-marquee flex w-max items-center gap-3.5" aria-hidden={false}>
+          {track.map((symbol, i) => (
+            <TickerItem key={`${symbol}-${i}`} symbol={symbol} price={mids[symbol]} />
+          ))}
+        </div>
       </div>
     </div>
   );

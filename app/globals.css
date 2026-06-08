@@ -199,6 +199,11 @@ select option { background: rgb(var(--surface)); color: rgb(var(--text-hi)); }
 .tab-enter          { animation: tabSlideIn 0.2s cubic-bezier(0.16,1,0.3,1) both; }
 .gradient-animate   { background-size: 200% 200%; animation: gradShift 6s ease infinite; }
 
+/* Seamless right-to-left ticker (track is duplicated; -50% loops cleanly). */
+@keyframes marquee { from { transform: translateX(0); } to { transform: translateX(-50%); } }
+.animate-marquee { animation: marquee 45s linear infinite; }
+.marquee-track:hover .animate-marquee { animation-play-state: paused; }
+
 .stagger-children > * { animation: fadeUp 0.4s cubic-bezier(0.16,1,0.3,1) both; }
 .stagger-children > *:nth-child(1) { animation-delay: 0ms; }
 .stagger-children > *:nth-child(2) { animation-delay: 50ms; }

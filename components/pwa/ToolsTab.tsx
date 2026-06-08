@@ -34,14 +34,6 @@ export function ToolsTab() {
         <FxBar currency={currency} onChangeCurrency={setCurrency} rates={rates} />
       </div>
 
-      <div className="space-y-2">
-        <div className="flex items-center gap-2">
-          <CircleDollarSign className="h-4 w-4 text-accent" strokeWidth={1.5} />
-          <h2 className="text-sm font-semibold text-text-hi">Debt To Paid</h2>
-        </div>
-        <DebtToPaidTracker currency={currency} rates={rates} />
-      </div>
-
       {isLoading ? (
         <Card>
           <p className="text-sm font-medium text-text-hi">Loading portfolio tools...</p>
@@ -67,6 +59,14 @@ export function ToolsTab() {
       ) : null}
 
       <ApprovalsScanner address={address} />
+
+      <div className="space-y-2">
+        <div className="flex items-center gap-2">
+          <CircleDollarSign className="h-4 w-4 text-accent" strokeWidth={1.5} />
+          <h2 className="text-sm font-semibold text-text-hi">Debt To Paid</h2>
+        </div>
+        <DebtToPaidTracker currency={currency} rates={rates} />
+      </div>
     </div>
   );
 }

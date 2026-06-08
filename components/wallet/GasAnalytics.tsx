@@ -1,19 +1,35 @@
 "use client";
 
-import { useMemo } from "react";
+import { useEffect, useMemo, useRef } from "react";
 import { Flame, Loader2 } from "lucide-react";
 import { useHistory } from "@/hooks/useHistory";
 import { buildGasSummary } from "@/lib/aggregate/gas";
 import { cn, formatUSD } from "@/lib/utils";
 import { Card } from "@/components/ui/Card";
 
+// Auto-page through history so the totals reflect (nearly) all-time fees, not
+// just the first page. Capped so a huge wallet can't trigger endless requests.
+const MAX_AUTO_PAGES = 20;
+
 /**
- * Gas / network-fee analytics from loaded history. Shared by desktop and PWA.
- * Shows total spent, 30-day spend, avg/largest, and a per-chain breakdown.
+ * Gas / network-fee analytics. Walks the full loaded history (auto-paging) so it
+ * shows lifetime fees, not only recent activity. Shared by desktop and PWA.
  */
 export function GasAnalytics({ address }: { address: string }) {
   const history = useHistory(address);
   const gas = useMemo(() => buildGasSummary(history.events), [history.events]);
+
+  // Progressively pull every available page so the total keeps growing.
+  const autoPages = useRef(0);
+  useEffect(() => { autoPages.current = 0; }, [address]);
+  useEffect(() => {
+    if (history.hasMore && !history.isLoading && !history.isFetching && autoPages.current < MAX_AUTO_PAGES) {
+      autoPages.current += 1;
+      history.loadMore();
+    }
+  }, [history.hasMore, history.isLoading, history.isFetching, history.events.length, history]);
+
+  const stillLoading = history.isLoading || history.isFetching || (history.hasMore && autoPages.current < MAX_AUTO_PAGES);
 
   const kpis = [
     { label: "Total gas", value: formatUSD(gas.totalFeeUsd) },
@@ -30,10 +46,12 @@ export function GasAnalytics({ address }: { address: string }) {
           <Flame className="h-4 w-4 text-warning" strokeWidth={1.6} />
           <div>
             <h2 className="text-sm font-semibold text-text-hi">Gas spent</h2>
-            <p className="text-[11px] text-text-lo">Network fees across loaded activity</p>
+            <p className="text-[11px] text-text-lo">Total network fees across your history</p>
           </div>
         </div>
-        {history.isLoading ? <Loader2 className="h-4 w-4 animate-spin text-text-lo" /> : (
+        {stillLoading ? (
+          <span className="flex items-center gap-1.5 text-[11px] text-text-lo"><Loader2 className="h-3.5 w-3.5 animate-spin" /> scanning…</span>
+        ) : (
           <span className="num text-[11px] text-text-lo">{gas.feeTxCount} txns</span>
         )}
       </div>

@@ -657,7 +657,7 @@ function WhatIfContent({ portfolio, selectedGoal, perpsData }: { portfolio: any;
 
   return (
     <div className="space-y-3 p-4">
-      {scenarios.slice(0, 6).map((scenario: any) => {
+      {scenarios.slice(0, 12).map((scenario: any) => {
         const isPositive = (scenario.estimatedValueDeltaUsd ?? 0) >= 0;
         return (
           <div key={scenario.scenarioId} className="rounded-xl border border-border bg-surface-raised overflow-hidden">
